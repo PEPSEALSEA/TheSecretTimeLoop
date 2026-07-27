@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Pirata One", system-ui, sans-serif;
+  --font-body: "Source Sans 3", "Segoe UI", sans-serif;
+  --color-sea-950: #06151a;
+  --color-sea-900: #0a242c;
+  --color-sea-800: #0f3a45;
+  --color-sea-700: #145564;
+  --color-gold-400: #e2b84a;
+  --color-gold-300: #f0d078;
+  --color-wood-700: #6b3f24;
+  --color-wood-600: #8a5230;
+  --color-foam: #d7f0ea;
+  --color-danger: #c84b3a;
+  --color-success: #2f9e6b;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-body);
+    color: var(--color-foam);
+    background:
+      radial-gradient(ellipse 120% 80% at 50% -20%, #1a5a68 0%, transparent 55%),
+      radial-gradient(ellipse 80% 50% at 100% 100%, #0d333c 0%, transparent 45%),
+      linear-gradient(165deg, var(--color-sea-950), var(--color-sea-900) 45%, #082028);
+    background-attachment: fixed;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .panel-wood {
+    background: linear-gradient(160deg, rgba(107, 63, 36, 0.55), rgba(61, 34, 18, 0.72));
+    border: 2px solid rgba(226, 184, 74, 0.45);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 12px 40px rgba(0, 0, 0, 0.35);
+  }
+
+  .btn-gold {
+    background: linear-gradient(180deg, var(--color-gold-300), var(--color-gold-400));
+    color: #1a1205;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s ease, filter 0.15s ease;
+  }
+
+  .btn-gold:hover:not(:disabled) {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+  }
+
+  .btn-gold:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-sea {
+    background: linear-gradient(180deg, var(--color-sea-700), var(--color-sea-800));
+    color: var(--color-foam);
+    border: 1px solid rgba(226, 184, 74, 0.35);
+    cursor: pointer;
+  }
+
+  .btn-sea:hover {
+    border-color: var(--color-gold-400);
+  }
+
+  .sea-grain {
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+}
