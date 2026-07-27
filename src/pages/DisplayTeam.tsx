@@ -9,6 +9,7 @@ import { subscribeTeam } from '../lib/teams'
 export function DisplayTeam() {
   const { teamId = '1' } = useParams()
   const [team, setTeam] = useState<TeamState | null>(null)
+  const [flash, setFlash] = useState(false)
   const lastUpdated = useRef<number | null>(null)
 
   useEffect(() => {
@@ -21,6 +22,8 @@ export function DisplayTeam() {
         data.updatedAt !== lastUpdated.current
       ) {
         playRoundSound(data.lastRound.result)
+        setFlash(true)
+        window.setTimeout(() => setFlash(false), 700)
       }
       if (data?.updatedAt) lastUpdated.current = data.updatedAt
     })
@@ -30,35 +33,59 @@ export function DisplayTeam() {
 
   return (
     <main className="sea-grain relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-4 py-8">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-40"
+        style={{
+          background:
+            'radial-gradient(ellipse 60% 50% at 50% 45%, rgba(201,162,39,0.12), transparent 70%)',
+        }}
+      />
+
       <Link
         to="/"
-        className="absolute left-4 top-4 text-sm text-white/40 no-underline hover:text-[var(--color-gold-400)]"
+        className="absolute left-4 top-4 z-10 text-sm text-[var(--color-mist)] no-underline hover:text-[var(--color-brass)]"
       >
-        หน้าแรก
+        ← หน้าแรก
+      </Link>
+      <Link
+        to="/display/all"
+        className="absolute right-4 top-4 z-10 text-sm text-[var(--color-mist)] no-underline hover:text-[var(--color-brass)]"
+      >
+        กระดานรวม
       </Link>
 
-      <p className="font-display mb-2 text-3xl text-[var(--color-gold-400)] md:text-5xl">
+      <motion.p
+        key={team?.name ?? teamId}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="font-display z-10 mb-2 text-[clamp(1.8rem,5vw,3.5rem)] text-[var(--color-brass)]"
+      >
         {team?.name ?? `ทีม ${teamId}`}
+      </motion.p>
+      <p className="z-10 mb-8 text-xs font-medium uppercase tracking-[0.45em] text-[var(--color-mist)]">
+        คะแนนทีม
       </p>
-      <p className="mb-6 text-sm uppercase tracking-[0.4em] text-white/50">คะแนนทีม</p>
 
       {team ? (
-        <AnimatedScore score={team.score} size="xl" />
+        <div className="z-10">
+          <AnimatedScore score={team.score} size="xl" flash={flash} />
+        </div>
       ) : (
-        <p className="font-display text-6xl text-white/30">รอข้อมูล…</p>
+        <p className="font-display z-10 text-5xl text-white/25">รอข้อมูล…</p>
       )}
 
       <AnimatePresence mode="wait">
         {last && (
           <motion.div
             key={`${last.result}-${team?.updatedAt}`}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className={`mt-8 rounded-xl px-6 py-3 text-center text-xl font-bold ${
+            initial={{ opacity: 0, y: 20, scale: 0.94 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 24 }}
+            className={`z-10 mt-10 rounded-2xl px-8 py-4 text-center text-xl font-bold md:text-2xl ${
               last.result === 'correct'
-                ? 'bg-[var(--color-success)]/25 text-[var(--color-success)]'
-                : 'bg-[var(--color-danger)]/25 text-[var(--color-danger)]'
+                ? 'bg-[rgba(60,184,138,0.18)] text-[var(--color-success)]'
+                : 'bg-[rgba(212,90,72,0.18)] text-[var(--color-danger)]'
             }`}
           >
             {last.result === 'correct' ? 'ถูก' : 'ผิด'} · {formatDelta(last.delta)} · ×

@@ -1,5 +1,5 @@
 export const firebaseConfig = {
-  apiKey: '',
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: 'secret-timeloop-2026.firebaseapp.com',
   databaseURL: 'https://secret-timeloop-2026-default-rtdb.asia-southeast1.firebasedatabase.app',
   projectId: 'secret-timeloop-2026',

@@ -15,10 +15,8 @@ export function MultiplierPicker({ value, onChange }: Props) {
             key={m}
             type="button"
             onClick={() => onChange(m)}
-            className={`rounded-lg px-2 py-3 text-lg font-bold transition ${
-              active
-                ? 'btn-gold shadow-[0_0_0_2px_rgba(240,208,120,0.6)]'
-                : 'btn-sea'
+            className={`rounded-xl px-2 py-3 text-base font-bold transition md:text-lg ${
+              active ? 'btn-gold' : 'btn-sea'
             }`}
           >
             ×{m.toFixed(1)}
