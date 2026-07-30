@@ -1,6 +1,7 @@
 {
   "rules": {
     "teams": {
+      ".read": true,
       "$teamId": {
         ".read": true,
         ".write": true,

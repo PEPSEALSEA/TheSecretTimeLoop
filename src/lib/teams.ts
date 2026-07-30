@@ -9,16 +9,13 @@ import { db } from './firebase'
 import {
   applyRound,
   createInitialTeam,
+  TEAM_IDS,
   type RoundResult,
   type TeamState,
 } from './scoring'
 
 function teamRef(teamId: string) {
   return ref(db, `teams/${teamId}`)
-}
-
-function teamsRootRef() {
-  return ref(db, 'teams')
 }
 
 export function subscribeTeam(
@@ -33,9 +30,20 @@ export function subscribeTeam(
 export function subscribeAllTeams(
   onData: (teams: Record<string, TeamState>) => void,
 ): Unsubscribe {
-  return onValue(teamsRootRef(), (snap) => {
-    onData(snap.exists() ? (snap.val() as Record<string, TeamState>) : {})
-  })
+  const cache: Record<string, TeamState> = {}
+  const unsubs = TEAM_IDS.map((teamId) =>
+    subscribeTeam(teamId, (team) => {
+      if (team) {
+        cache[teamId] = team
+      } else {
+        delete cache[teamId]
+      }
+      onData({ ...cache })
+    }),
+  )
+  return () => {
+    for (const unsub of unsubs) unsub()
+  }
 }
 
 export async function ensureTeam(
