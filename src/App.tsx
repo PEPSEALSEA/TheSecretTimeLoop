@@ -1,8 +1,14 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { AdminGate } from './components/AdminGate'
 import { Admin } from './pages/Admin'
 import { DisplayAll } from './pages/DisplayAll'
 import { Home } from './pages/Home'
+import { StaffTeam } from './pages/StaffTeam'
+
+function StaffRedirect() {
+  const { teamId } = useParams()
+  return <Navigate to={`/staff/${teamId ?? '1'}`} replace />
+}
 
 export default function App() {
   return (
@@ -17,7 +23,15 @@ export default function App() {
             </AdminGate>
           }
         />
-        <Route path="/admin/:teamId" element={<Navigate to="/admin" replace />} />
+        <Route
+          path="/staff/:teamId"
+          element={
+            <AdminGate>
+              <StaffTeam />
+            </AdminGate>
+          }
+        />
+        <Route path="/admin/:teamId" element={<StaffRedirect />} />
         <Route path="/display/all" element={<DisplayAll />} />
         <Route path="/display/:teamId" element={<Navigate to="/display/all" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
