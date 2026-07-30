@@ -70,7 +70,13 @@ export function TeamGrid({ teams, scoredTeams = {} }: Props) {
             transition={{ duration: 0.35 }}
             className={`lb-card ${isFlash ? 'lb-card-flash' : ''} ${isScored ? 'lb-card-scored' : ''}`}
           >
-            <img src={cardSrc} alt="" className="lb-card-bg" draggable={false} />
+            <img
+              src={cardSrc}
+              alt=""
+              className="lb-card-bg"
+              draggable={false}
+              decoding="sync"
+            />
             <div className="lb-card-body">
               <span className="lb-card-rank">#{rank}</span>
               <p className="lb-card-name">{team?.name ?? `ทีมที่ ${id}`}</p>

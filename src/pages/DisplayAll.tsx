@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { GameTimer } from '../components/GameTimer'
 import { TeamGrid } from '../components/TeamGrid'
-import { leaderboardAsset } from '../lib/assets'
+import { leaderboardAsset, preloadLeaderboardAssets } from '../lib/assets'
 import {
   effectivePhase,
   questionProgressLabel,
@@ -36,6 +36,7 @@ function RoundBadge({ round }: { round: number }) {
         alt=""
         className="lb-round-img"
         draggable={false}
+        decoding="sync"
       />
       <span className="lb-round-text">รอบที่ {round}</span>
     </div>
@@ -45,10 +46,24 @@ function RoundBadge({ round }: { round: number }) {
 export function DisplayAll() {
   const [game, setGame] = useState<GameState | null>(null)
   const [teams, setTeams] = useState<Record<string, TeamState>>({})
+  const [assetsReady, setAssetsReady] = useState(false)
+  const [loadProgress, setLoadProgress] = useState(0)
   const prevUpdatedAt = useRef<Record<string, number>>({})
   const prevRankKey = useRef<string | null>(null)
   const ready = useRef(false)
   const stageScale = useStageScale()
+
+  useEffect(() => {
+    let cancelled = false
+    void preloadLeaderboardAssets((loaded, total) => {
+      if (!cancelled) setLoadProgress(loaded / total)
+    }).then(() => {
+      if (!cancelled) setAssetsReady(true)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => subscribeGame(setGame), [])
   useEffect(() => subscribeAllTeams(setTeams), [])
@@ -107,6 +122,35 @@ export function DisplayAll() {
     }
     prevRankKey.current = nextRank
   }, [teams, phase])
+
+  if (!assetsReady) {
+    const pct = Math.round(loadProgress * 100)
+    return (
+      <main className="pirate-scene sea-grain relative flex min-h-dvh flex-col items-center justify-center px-4 py-6 text-center">
+        <p className="font-pirate text-2xl text-[var(--color-ocean)] md:text-3xl">
+          The Secret Time Loop
+        </p>
+        <h1 className="font-display title-glow mt-3 text-[clamp(2rem,6vw,3.5rem)]">
+          กำลังเตรียมกระดาน
+        </h1>
+        <p className="mt-3 text-[var(--color-ink-muted)]">โหลดรูปและฟอนต์ก่อนเข้าเกม</p>
+        <div
+          className="mt-8 h-2 w-full max-w-sm overflow-hidden rounded-full bg-[rgba(12,58,94,0.15)]"
+          role="progressbar"
+          aria-valuenow={pct}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label="ความคืบหน้าการโหลด"
+        >
+          <div
+            className="h-full rounded-full bg-[var(--color-gold)] transition-[width] duration-200 ease-out"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <p className="mt-3 font-score text-sm text-[var(--color-ink-muted)]">{pct}%</p>
+      </main>
+    )
+  }
 
   return (
     <main
@@ -232,6 +276,7 @@ export function DisplayAll() {
                     alt="LEADERBOARD"
                     className="lb-title"
                     draggable={false}
+                    decoding="sync"
                   />
                   <RoundBadge round={roundNumber} />
                 </header>
