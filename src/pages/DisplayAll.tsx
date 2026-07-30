@@ -216,7 +216,7 @@ export function DisplayAll() {
                 </div>
               </div>
             </div>
-            <TeamGrid teams={teams} ranked />
+            <TeamGrid teams={teams} scoredTeams={game?.scoredTeams ?? {}} />
           </motion.section>
         )}
       </AnimatePresence>
