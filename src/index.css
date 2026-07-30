@@ -301,11 +301,11 @@
   }
 
   .lb-round:first-child {
-    left: 8px;
+    left: 96px;
   }
 
   .lb-round:last-child {
-    right: 8px;
+    right: 96px;
   }
 
   .lb-round-img {
@@ -360,7 +360,7 @@
 
   .lb-card-body {
     position: absolute;
-    inset: 9% 7% 11%;
+    inset: 18% 8% 8%;
     z-index: 1;
     display: flex;
     flex-direction: column;
@@ -371,10 +371,10 @@
 
   .lb-card-rank {
     position: absolute;
-    top: 4%;
-    right: 6%;
+    top: 10%;
+    right: 11%;
     font-family: var(--font-display);
-    font-size: 2.6rem;
+    font-size: 2.4rem;
     font-weight: 800;
     line-height: 1;
     color: #6b3d1f;
@@ -392,7 +392,7 @@
   }
 
   .lb-card-score {
-    margin: 0.75rem 0 0;
+    margin: 0.65rem 0 0;
     border-radius: 1rem;
     padding: 0.45rem 1.25rem;
     font-family: var(--font-display);
