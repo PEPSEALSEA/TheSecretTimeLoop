@@ -7,6 +7,10 @@
         ".write": true,
         ".validate": "newData.hasChildren(['name', 'score', 'startingScore', 'updatedAt']) && newData.child('score').isNumber() && newData.child('startingScore').isNumber() && newData.child('updatedAt').isNumber()"
       }
+    },
+    "game": {
+      ".read": true,
+      ".write": true
     }
   }
 }

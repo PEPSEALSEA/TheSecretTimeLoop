@@ -33,10 +33,20 @@ Open `http://localhost:5173/TheSecretTimeLoop/` (Vite `base` matches GitHub Page
 ## Routes
 
 - `/` — public home
-- `/display/all` — all-teams live scoreboard
-- `/admin` — staff desk (**hidden**, password required, direct link only)
+- `/display/all` — host screen (question → wait → reveal → scores)
+- `/admin` — staff control + scoring (**hidden**, password required)
 
 Admin is not linked from public pages. Open `/admin` directly and enter `VITE_ADMIN_PASSWORD`.
+
+## Game flow
+
+1. Admin starts game → host shows question + timer (top-right)
+2. Time ends → question clears; admin must click to reveal (no auto-next)
+3. Reveal answer → admin goes to scoreboard
+4. Admin edits any team; progress shows e.g. `3/8`
+5. Admin presses next → next question
+
+Questions and per-question `durationSec` live in `src/lib/questions.ts` (edit there for now).
 
 ## Environment
 
