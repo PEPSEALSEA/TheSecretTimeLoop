@@ -263,21 +263,23 @@
     width: 100%;
     height: 100%;
     flex-direction: column;
-    justify-content: center;
-    gap: 18px;
-    padding: 22px 40px 30px;
+    gap: 4px;
+    padding: 8px 24px 16px;
   }
 
   .lb-header {
+    position: relative;
     display: grid;
-    grid-template-columns: 160px minmax(0, 1fr) 160px;
+    flex: 0 0 200px;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    gap: 12px;
+    gap: 0;
   }
 
   .lb-title {
     display: block;
-    width: min(100%, 1120px);
+    grid-column: 2;
+    width: 1180px;
     height: 200px;
     margin: 0 auto;
     object-fit: contain;
@@ -285,12 +287,22 @@
   }
 
   .lb-round {
-    position: relative;
+    position: absolute;
+    top: 50%;
+    z-index: 2;
     display: grid;
     place-items: center;
-    width: 160px;
-    height: 250px;
-    flex-shrink: 0;
+    width: 170px;
+    height: 260px;
+    transform: translateY(-50%);
+  }
+
+  .lb-round:first-child {
+    left: 8px;
+  }
+
+  .lb-round:last-child {
+    right: 8px;
   }
 
   .lb-round-img {
@@ -299,7 +311,7 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
-    transform: rotate(90deg) scale(1.75);
+    transform: rotate(90deg) scale(1.9);
     filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.28));
     pointer-events: none;
   }
@@ -310,7 +322,7 @@
     max-width: 3.4em;
     text-align: center;
     font-family: var(--font-display);
-    font-size: 1.65rem;
+    font-size: 1.85rem;
     font-weight: 800;
     line-height: 1.15;
     color: #4a2c1a;
@@ -319,12 +331,11 @@
 
   .lb-grid {
     display: grid;
-    flex: 1;
+    flex: 1 1 auto;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     grid-template-rows: repeat(2, minmax(0, 1fr));
-    gap: 18px 22px;
+    gap: 10px 14px;
     min-height: 0;
-    align-content: stretch;
   }
 
   .lb-card {
@@ -346,7 +357,7 @@
 
   .lb-card-body {
     position: absolute;
-    inset: 11% 9% 13%;
+    inset: 9% 7% 11%;
     z-index: 1;
     display: flex;
     flex-direction: column;
@@ -357,10 +368,10 @@
 
   .lb-card-rank {
     position: absolute;
-    top: 0;
-    right: 0;
+    top: 4%;
+    right: 6%;
     font-family: var(--font-display);
-    font-size: 2rem;
+    font-size: 2.6rem;
     font-weight: 800;
     line-height: 1;
     color: #6b3d1f;
@@ -369,20 +380,20 @@
 
   .lb-card-name {
     margin: 0;
-    padding-inline: 1.8rem;
+    padding-inline: 2.2rem;
     font-family: var(--font-display);
-    font-size: 2.85rem;
+    font-size: 4.1rem;
     font-weight: 800;
-    line-height: 1.08;
+    line-height: 1.02;
     color: #3d2414;
   }
 
   .lb-card-score {
-    margin: 0.65rem 0 0;
-    border-radius: 0.9rem;
-    padding: 0.35rem 1rem;
+    margin: 0.75rem 0 0;
+    border-radius: 1rem;
+    padding: 0.45rem 1.25rem;
     font-family: var(--font-display);
-    font-size: 2.05rem;
+    font-size: 2.9rem;
     font-weight: 700;
     color: #4a2c1a;
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
