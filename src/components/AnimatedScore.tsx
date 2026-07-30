@@ -20,7 +20,7 @@ export function AnimatedScore({ score, size = 'lg', className = '', flash }: Pro
     <motion.span
       animate={flash ? { scale: [1, 1.08, 1] } : { scale: 1 }}
       transition={{ duration: 0.45, ease: 'easeOut' }}
-      className={`font-score inline-flex items-baseline text-[var(--color-brass-soft)] drop-shadow-[0_3px_14px_rgba(0,0,0,0.4)] ${sizeClass[size]} ${className}`}
+      className={`font-score inline-flex items-baseline text-[var(--color-ocean-deep)] drop-shadow-[0_2px_0_rgba(255,255,255,0.75)] ${sizeClass[size]} ${className}`}
     >
       <NumberFlow
         value={Math.round(score)}

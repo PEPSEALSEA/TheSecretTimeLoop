@@ -57,11 +57,29 @@ export async function ensureTeam(
   return initial
 }
 
+export async function ensureAllTeams(startingScore?: number): Promise<void> {
+  await Promise.all(TEAM_IDS.map((id) => ensureTeam(id, startingScore)))
+}
+
 export async function resetTeam(
   teamId: string,
   startingScore: number,
 ): Promise<void> {
   await set(teamRef(teamId), createInitialTeam(teamId, startingScore))
+}
+
+export async function setTeamScore(
+  teamId: string,
+  score: number,
+): Promise<TeamState> {
+  const current = await ensureTeam(teamId)
+  const next: TeamState = {
+    ...current,
+    score,
+    updatedAt: Date.now(),
+  }
+  await set(teamRef(teamId), next)
+  return next
 }
 
 export async function submitRound(

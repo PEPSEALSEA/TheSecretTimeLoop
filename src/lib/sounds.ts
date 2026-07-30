@@ -44,6 +44,9 @@ function toneDataUri(freq: number, durationMs: number, type: 'sine' | 'square' =
 const correctHigh = new Howl({ src: [toneDataUri(659.25, 220)], volume: 0.5 })
 const correctLow = new Howl({ src: [toneDataUri(523.25, 180)], volume: 0.5 })
 const wrongHowl = new Howl({ src: [toneDataUri(220, 280, 'square')], volume: 0.4 })
+const boardLow = new Howl({ src: [toneDataUri(784, 110)], volume: 0.38 })
+const boardHigh = new Howl({ src: [toneDataUri(988, 140)], volume: 0.38 })
+const boardFanfare = new Howl({ src: [toneDataUri(1174.66, 180)], volume: 0.32 })
 
 let unlocked = false
 
@@ -64,4 +67,19 @@ export function playRoundSound(result: RoundResult): void {
   } else {
     wrongHowl.play()
   }
+}
+
+/** Short chime when the scoreboard receives a live score update. */
+export function playScoreboardUpdateSound(): void {
+  unlockAudio()
+  boardLow.play()
+  window.setTimeout(() => boardHigh.play(), 80)
+}
+
+/** Slightly richer chime when leaderboard order changes on the all-teams board. */
+export function playLeaderboardChangeSound(): void {
+  unlockAudio()
+  boardLow.play()
+  window.setTimeout(() => boardHigh.play(), 70)
+  window.setTimeout(() => boardFanfare.play(), 150)
 }
