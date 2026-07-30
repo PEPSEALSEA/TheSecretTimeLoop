@@ -14,6 +14,7 @@ import { getQuestion } from '../lib/questions'
 import type { TeamState } from '../lib/scoring'
 import { TEAM_IDS } from '../lib/scoring'
 import { playLeaderboardChangeSound, playScoreboardUpdateSound, unlockAudio } from '../lib/sounds'
+import { STAGE_H, STAGE_W, useStageScale } from '../lib/stage'
 import { subscribeAllTeams } from '../lib/teams'
 import { remainingMs, useNow } from '../lib/timer'
 
@@ -47,6 +48,7 @@ export function DisplayAll() {
   const prevUpdatedAt = useRef<Record<string, number>>({})
   const prevRankKey = useRef<string | null>(null)
   const ready = useRef(false)
+  const stageScale = useStageScale()
 
   useEffect(() => subscribeGame(setGame), [])
   useEffect(() => subscribeAllTeams(setTeams), [])
@@ -59,6 +61,18 @@ export function DisplayAll() {
   const totalMs = (question?.durationSec ?? 0) * 1000
   const isBoard = phase === 'scores' || phase === 'finished'
   const roundNumber = (game?.questionIndex ?? 0) + 1
+
+  useEffect(() => {
+    if (!isBoard) return
+    const prevHtml = document.documentElement.style.overflow
+    const prevBody = document.body.style.overflow
+    document.documentElement.style.overflow = 'hidden'
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.documentElement.style.overflow = prevHtml
+      document.body.style.overflow = prevBody
+    }
+  }, [isBoard])
 
   useEffect(() => {
     if (phase !== 'scores') return
@@ -98,7 +112,7 @@ export function DisplayAll() {
     <main
       className={
         isBoard
-          ? 'relative min-h-dvh'
+          ? 'lb-viewport'
           : 'pirate-scene sea-grain relative min-h-dvh px-4 py-6 md:px-8 md:py-10'
       }
       onPointerDown={unlockAudio}
@@ -200,21 +214,30 @@ export function DisplayAll() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="lb-screen"
-            style={{ backgroundImage: `url(${leaderboardAsset('bg.jpg')})` }}
           >
-            <div className="lb-inner">
-              <header className="lb-header">
-                <RoundBadge round={roundNumber} />
-                <img
-                  src={leaderboardAsset('title-scroll.png')}
-                  alt="LEADERBOARD"
-                  className="lb-title"
-                  draggable={false}
-                />
-                <RoundBadge round={roundNumber} />
-              </header>
+            <div
+              className="lb-stage"
+              style={{
+                width: STAGE_W,
+                height: STAGE_H,
+                transform: `scale(${stageScale})`,
+                backgroundImage: `url(${leaderboardAsset('bg.jpg')})`,
+              }}
+            >
+              <div className="lb-inner">
+                <header className="lb-header">
+                  <RoundBadge round={roundNumber} />
+                  <img
+                    src={leaderboardAsset('title-scroll.png')}
+                    alt="LEADERBOARD"
+                    className="lb-title"
+                    draggable={false}
+                  />
+                  <RoundBadge round={roundNumber} />
+                </header>
 
-              <TeamGrid teams={teams} scoredTeams={game?.scoredTeams ?? {}} />
+                <TeamGrid teams={teams} scoredTeams={game?.scoredTeams ?? {}} />
+              </div>
             </div>
           </motion.section>
         )}
