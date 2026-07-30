@@ -146,12 +146,12 @@ export function StaffTeam() {
   }
 
   return (
-    <main className="pirate-scene sea-grain mx-auto min-h-dvh max-w-xl px-4 py-6">
-      <div className="mb-5 flex items-center justify-between gap-3">
-        <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--color-pirate-red)]">
+    <main className="pirate-scene sea-grain mx-auto min-h-dvh max-w-md px-3 py-4 text-[0.95rem]">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <p className="text-[0.65rem] font-bold uppercase tracking-[0.28em] text-[var(--color-pirate-red)]">
           Staff · โต๊ะ {teamId}
         </p>
-        <p className="font-score text-lg text-[var(--color-ocean-deep)]">
+        <p className="font-score text-base text-[var(--color-ocean-deep)]">
           {doneCount}/{TEAM_IDS.length}
         </p>
       </div>
@@ -159,14 +159,14 @@ export function StaffTeam() {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="parchment panel mb-5 rounded-2xl p-4"
+        className="parchment panel mb-3 rounded-xl p-3"
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--color-ink-muted)]">
+            <p className="text-[0.65rem] font-bold uppercase tracking-[0.28em] text-[var(--color-ink-muted)]">
               สถานะรอบนี้
             </p>
-            <p className="mt-1 font-display text-xl text-[var(--color-ocean-deep)]">
+            <p className="mt-0.5 font-display text-lg text-[var(--color-ocean-deep)]">
               {canScore
                 ? alreadyScored
                   ? 'บันทึกแล้ว · รอข้อต่อไป'
@@ -174,19 +174,19 @@ export function StaffTeam() {
                 : 'รอช่วงแก้คะแนน'}
             </p>
             {game && phase !== 'lobby' && (
-              <p className="mt-1 text-sm text-[var(--color-ink-muted)]">
+              <p className="mt-0.5 text-xs text-[var(--color-ink-muted)]">
                 {questionProgressLabel(game.questionIndex)}
               </p>
             )}
           </div>
           {alreadyScored && (
-            <span className="rounded-full bg-[rgba(45,138,94,0.18)] px-3 py-1.5 text-sm font-bold text-[var(--color-success)]">
+            <span className="rounded-full bg-[rgba(45,138,94,0.18)] px-2.5 py-1 text-xs font-bold text-[var(--color-success)]">
               เสร็จแล้ว
             </span>
           )}
         </div>
         {question && (phase === 'reveal' || phase === 'scores') && (
-          <p className="mt-3 rounded-xl bg-[rgba(255,255,255,0.35)] px-3 py-2 text-sm text-[var(--color-ink-muted)]">
+          <p className="mt-2 rounded-lg bg-[rgba(255,255,255,0.35)] px-2.5 py-1.5 text-xs text-[var(--color-ink-muted)]">
             เฉลย: <span className="font-semibold text-[var(--color-success)]">{question.answer}</span>
           </p>
         )}
@@ -195,29 +195,29 @@ export function StaffTeam() {
       <motion.header
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`parchment panel mb-5 rounded-2xl p-6 text-center ${
+        className={`parchment panel mb-3 rounded-xl p-4 text-center ${
           savedFlash ? 'panel-glow' : ''
         }`}
       >
-        <p className="text-xs font-bold uppercase tracking-[0.35em] text-[var(--color-ink-muted)]">
+        <p className="text-[0.65rem] font-bold uppercase tracking-[0.35em] text-[var(--color-ink-muted)]">
           คะแนนทีมนี้
         </p>
-        <h1 className="font-display mt-2 text-3xl text-[var(--color-ocean-deep)] md:text-4xl">
+        <h1 className="font-display mt-1 text-2xl text-[var(--color-ocean-deep)]">
           {team?.name ?? `ทีม ${teamId}`}
         </h1>
         {team ? (
-          <div className="mt-2">
-            <AnimatedScore score={team.score} size="lg" />
+          <div className="mt-1">
+            <AnimatedScore score={team.score} size="md" />
           </div>
         ) : (
-          <p className="mt-2 text-4xl text-[var(--color-ink-muted)]/35">…</p>
+          <p className="mt-1 text-3xl text-[var(--color-ink-muted)]/35">…</p>
         )}
       </motion.header>
 
       {!canScore ? (
-        <section className="parchment panel rounded-2xl p-8 text-center">
-          <p className="font-display text-2xl text-[var(--color-ocean-deep)]">เปิดค้างไว้ได้เลย</p>
-          <p className="mt-2 text-[var(--color-ink-muted)]">
+        <section className="parchment panel rounded-xl p-5 text-center">
+          <p className="font-display text-xl text-[var(--color-ocean-deep)]">เปิดค้างไว้ได้เลย</p>
+          <p className="mt-1.5 text-sm text-[var(--color-ink-muted)]">
             พอ host เปิดหน้ากระดานคะแนน ฟอร์มแก้คะแนนจะโผล่ที่นี่อัตโนมัติ
           </p>
         </section>
@@ -227,12 +227,12 @@ export function StaffTeam() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             onSubmit={onSubmitRound}
-            className="parchment panel mb-5 space-y-5 rounded-2xl p-5 md:p-6"
+            className="parchment panel mb-3 space-y-3 rounded-xl p-4"
           >
-            <h2 className="font-display text-lg text-[var(--color-ocean-deep)]">บันทึกรอบเดิมพัน</h2>
+            <h2 className="font-display text-base text-[var(--color-ocean-deep)]">บันทึกรอบเดิมพัน</h2>
 
             <label className="block">
-              <span className="mb-1.5 block text-sm font-semibold text-[var(--color-ink-muted)]">
+              <span className="mb-1 block text-xs font-semibold text-[var(--color-ink-muted)]">
                 เงินเดิมพัน
               </span>
               <input
@@ -242,26 +242,26 @@ export function StaffTeam() {
                 value={bet}
                 onChange={(e) => setBet(e.target.value)}
                 onFocus={unlockAudio}
-                className="input-field text-2xl font-semibold"
+                className="input-field py-2 text-xl font-semibold"
               />
             </label>
 
             <div>
-              <span className="mb-2 block text-sm font-semibold text-[var(--color-ink-muted)]">
+              <span className="mb-1.5 block text-xs font-semibold text-[var(--color-ink-muted)]">
                 ตัวคูณ
               </span>
               <MultiplierPicker value={multiplier} onChange={setMultiplier} />
             </div>
 
             <div>
-              <span className="mb-2 block text-sm font-semibold text-[var(--color-ink-muted)]">
+              <span className="mb-1.5 block text-xs font-semibold text-[var(--color-ink-muted)]">
                 ผลลัพธ์
               </span>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setResult('correct')}
-                  className={`rounded-xl py-4 text-xl font-bold transition ${
+                  className={`rounded-lg py-2.5 text-base font-bold transition ${
                     result === 'correct'
                       ? 'bg-[var(--color-success)] text-white'
                       : 'btn-sea'
@@ -272,7 +272,7 @@ export function StaffTeam() {
                 <button
                   type="button"
                   onClick={() => setResult('wrong')}
-                  className={`rounded-xl py-4 text-xl font-bold transition ${
+                  className={`rounded-lg py-2.5 text-base font-bold transition ${
                     result === 'wrong' ? 'bg-[var(--color-danger)] text-white' : 'btn-sea'
                   }`}
                 >
@@ -282,16 +282,16 @@ export function StaffTeam() {
             </div>
 
             {preview && (
-              <div className="rounded-xl bg-[rgba(255,255,255,0.35)] px-4 py-3.5 text-center">
-                <p className="text-sm text-[var(--color-ink-muted)]">พรีวิวรอบนี้</p>
+              <div className="rounded-lg bg-[rgba(255,255,255,0.35)] px-3 py-2.5 text-center">
+                <p className="text-xs text-[var(--color-ink-muted)]">พรีวิวรอบนี้</p>
                 <p
-                  className={`mt-1 font-display text-3xl ${
+                  className={`mt-0.5 font-display text-2xl ${
                     preview.delta >= 0 ? 'text-[var(--color-success)]' : 'text-[var(--color-danger)]'
                   }`}
                 >
                   {formatDelta(preview.delta)}
                 </p>
-                <p className="mt-1 text-sm text-[var(--color-ink-muted)]">
+                <p className="mt-0.5 text-xs text-[var(--color-ink-muted)]">
                   คะแนนหลังรอบ ≈ {Math.round(preview.nextScore).toLocaleString('th-TH')}
                 </p>
               </div>
@@ -300,48 +300,48 @@ export function StaffTeam() {
             <button
               type="submit"
               disabled={busy || !team}
-              className="btn-gold w-full rounded-xl py-4 text-xl"
+              className="btn-gold w-full rounded-lg py-3 text-lg"
             >
               {busy ? 'กำลังบันทึก…' : 'ยืนยันรอบนี้'}
             </button>
           </motion.form>
 
-          <section className="parchment panel mb-5 space-y-4 rounded-2xl p-5">
-            <h2 className="font-display text-lg text-[var(--color-ocean-deep)]">ตั้งคะแนนตรงๆ</h2>
+          <section className="parchment panel mb-3 space-y-2 rounded-xl p-4">
+            <h2 className="font-display text-base text-[var(--color-ocean-deep)]">ตั้งคะแนนตรงๆ</h2>
             <div className="flex gap-2">
               <input
                 type="number"
                 min={0}
                 value={manualScore}
                 onChange={(e) => setManualScore(e.target.value)}
-                className="input-field min-w-0 flex-1 py-2.5 text-lg"
+                className="input-field min-w-0 flex-1 py-2 text-base"
               />
               <button
                 type="button"
                 disabled={busy || !team}
                 onClick={onSetScore}
-                className="btn-ocean rounded-xl px-4 py-2 font-semibold"
+                className="btn-ocean rounded-lg px-3 py-2 text-sm font-semibold"
               >
                 ตั้งคะแนน
               </button>
             </div>
           </section>
 
-          <section className="parchment panel rounded-2xl p-5">
-            <h2 className="font-display text-lg text-[var(--color-ocean-deep)]">รีเซ็ตทีมนี้</h2>
-            <div className="mt-3 flex gap-2">
+          <section className="parchment panel rounded-xl p-4">
+            <h2 className="font-display text-base text-[var(--color-ocean-deep)]">รีเซ็ตทีมนี้</h2>
+            <div className="mt-2 flex gap-2">
               <input
                 type="number"
                 min={0}
                 value={startingScore}
                 onChange={(e) => setStartingScore(e.target.value)}
-                className="input-field min-w-0 flex-1 py-2.5 text-lg"
+                className="input-field min-w-0 flex-1 py-2 text-base"
               />
               <button
                 type="button"
                 disabled={busy}
                 onClick={onReset}
-                className="btn-sea rounded-xl px-4 py-2 font-semibold"
+                className="btn-sea rounded-lg px-3 py-2 text-sm font-semibold"
               >
                 รีเซ็ตทีม
               </button>
@@ -351,7 +351,7 @@ export function StaffTeam() {
       )}
 
       {error && (
-        <p className="mt-4 text-center text-[var(--color-danger)]">{error}</p>
+        <p className="mt-3 text-center text-sm text-[var(--color-danger)]">{error}</p>
       )}
     </main>
   )

@@ -264,21 +264,21 @@
     height: 100%;
     flex-direction: column;
     justify-content: center;
-    gap: 28px;
-    padding: 36px 64px 48px;
+    gap: 18px;
+    padding: 22px 40px 30px;
   }
 
   .lb-header {
     display: grid;
-    grid-template-columns: 140px minmax(0, 1fr) 140px;
+    grid-template-columns: 160px minmax(0, 1fr) 160px;
     align-items: center;
-    gap: 20px;
+    gap: 12px;
   }
 
   .lb-title {
     display: block;
-    width: min(100%, 980px);
-    height: 168px;
+    width: min(100%, 1120px);
+    height: 200px;
     margin: 0 auto;
     object-fit: contain;
     filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.35));
@@ -288,8 +288,8 @@
     position: relative;
     display: grid;
     place-items: center;
-    width: 140px;
-    height: 220px;
+    width: 160px;
+    height: 250px;
     flex-shrink: 0;
   }
 
@@ -299,7 +299,7 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
-    transform: rotate(90deg) scale(1.7);
+    transform: rotate(90deg) scale(1.75);
     filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.28));
     pointer-events: none;
   }
@@ -310,7 +310,7 @@
     max-width: 3.4em;
     text-align: center;
     font-family: var(--font-display);
-    font-size: 1.45rem;
+    font-size: 1.65rem;
     font-weight: 800;
     line-height: 1.15;
     color: #4a2c1a;
@@ -322,9 +322,9 @@
     flex: 1;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     grid-template-rows: repeat(2, minmax(0, 1fr));
-    gap: 28px 32px;
+    gap: 18px 22px;
     min-height: 0;
-    align-content: center;
+    align-content: stretch;
   }
 
   .lb-card {
@@ -346,7 +346,7 @@
 
   .lb-card-body {
     position: absolute;
-    inset: 14% 11% 16%;
+    inset: 11% 9% 13%;
     z-index: 1;
     display: flex;
     flex-direction: column;
@@ -360,7 +360,7 @@
     top: 0;
     right: 0;
     font-family: var(--font-display);
-    font-size: 1.7rem;
+    font-size: 2rem;
     font-weight: 800;
     line-height: 1;
     color: #6b3d1f;
@@ -369,20 +369,20 @@
 
   .lb-card-name {
     margin: 0;
-    padding-inline: 1.6rem;
+    padding-inline: 1.8rem;
     font-family: var(--font-display);
-    font-size: 2.35rem;
+    font-size: 2.85rem;
     font-weight: 800;
-    line-height: 1.1;
+    line-height: 1.08;
     color: #3d2414;
   }
 
   .lb-card-score {
-    margin: 0.55rem 0 0;
-    border-radius: 0.85rem;
-    padding: 0.28rem 0.9rem;
+    margin: 0.65rem 0 0;
+    border-radius: 0.9rem;
+    padding: 0.35rem 1rem;
     font-family: var(--font-display);
-    font-size: 1.7rem;
+    font-size: 2.05rem;
     font-weight: 700;
     color: #4a2c1a;
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
