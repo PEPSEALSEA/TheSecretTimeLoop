@@ -1,8 +1,9 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { GameTimer } from '../components/GameTimer'
 import { TeamGrid } from '../components/TeamGrid'
+import { leaderboardAsset } from '../lib/assets'
 import {
   effectivePhase,
   questionProgressLabel,
@@ -26,6 +27,20 @@ function rankKey(teams: Record<string, TeamState>): string {
     .join('|')
 }
 
+function RoundBadge({ round }: { round: number }) {
+  return (
+    <div className="lb-round" aria-label={`รอบที่ ${round}`}>
+      <img
+        src={leaderboardAsset('round-scroll.png')}
+        alt=""
+        className="lb-round-img"
+        draggable={false}
+      />
+      <span className="lb-round-text">รอบที่ {round}</span>
+    </div>
+  )
+}
+
 export function DisplayAll() {
   const [game, setGame] = useState<GameState | null>(null)
   const [teams, setTeams] = useState<Record<string, TeamState>>({})
@@ -42,6 +57,8 @@ export function DisplayAll() {
   const now = useNow(timerActive || phase === 'waiting')
   const left = remainingMs(game?.endsAt ?? null, now)
   const totalMs = (question?.durationSec ?? 0) * 1000
+  const isBoard = phase === 'scores' || phase === 'finished'
+  const roundNumber = (game?.questionIndex ?? 0) + 1
 
   useEffect(() => {
     if (phase !== 'scores') return
@@ -77,21 +94,13 @@ export function DisplayAll() {
     prevRankKey.current = nextRank
   }, [teams, phase])
 
-  const leader = useMemo(() => {
-    let best: { id: string; score: number; name: string } | null = null
-    for (const id of TEAM_IDS) {
-      const t = teams[id]
-      if (!t) continue
-      if (!best || t.score > best.score) {
-        best = { id, score: t.score, name: t.name }
-      }
-    }
-    return best
-  }, [teams])
-
   return (
     <main
-      className="pirate-scene sea-grain relative min-h-dvh px-4 py-6 md:px-8 md:py-10"
+      className={
+        isBoard
+          ? 'relative min-h-dvh'
+          : 'pirate-scene sea-grain relative min-h-dvh px-4 py-6 md:px-8 md:py-10'
+      }
       onPointerDown={unlockAudio}
     >
       {timerActive && left > 0 && (
@@ -184,39 +193,29 @@ export function DisplayAll() {
           </motion.section>
         )}
 
-        {(phase === 'scores' || phase === 'finished') && (
+        {isBoard && (
           <motion.section
             key="scores"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="mx-auto max-w-7xl"
+            className="lb-screen"
+            style={{ backgroundImage: `url(${leaderboardAsset('bg.jpg')})` }}
           >
-            <div className="parchment panel mb-7 overflow-hidden rounded-[1.75rem] p-5 md:p-7">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <p className="font-pirate text-xl text-[var(--color-ocean)] md:text-2xl">
-                    The Secret Time Loop
-                  </p>
-                  <h1 className="font-display title-glow mt-1 text-[clamp(2rem,5vw,3.5rem)] leading-tight">
-                    {phase === 'finished' ? 'สรุปคะแนนสุดท้าย' : 'กระดานคะแนนรวม'}
-                  </h1>
-                  <p className="mt-2 text-sm text-[var(--color-ink-muted)] md:text-base">
-                    {phase === 'finished'
-                      ? 'จบเกมแล้ว'
-                      : `${questionProgressLabel(game?.questionIndex ?? 0)} · ทีมนำ: ${leader?.name ?? '—'}`}
-                  </p>
-                </div>
-                <div className="live-badge inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-bold tracking-[0.24em]">
-                  <span className="relative flex h-2.5 w-2.5">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-success)] opacity-60" />
-                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[var(--color-success)]" />
-                  </span>
-                  LIVE
-                </div>
-              </div>
+            <div className="lb-inner">
+              <header className="lb-header">
+                <RoundBadge round={roundNumber} />
+                <img
+                  src={leaderboardAsset('title-scroll.png')}
+                  alt="LEADERBOARD"
+                  className="lb-title"
+                  draggable={false}
+                />
+                <RoundBadge round={roundNumber} />
+              </header>
+
+              <TeamGrid teams={teams} scoredTeams={game?.scoredTeams ?? {}} />
             </div>
-            <TeamGrid teams={teams} scoredTeams={game?.scoredTeams ?? {}} />
           </motion.section>
         )}
       </AnimatePresence>
