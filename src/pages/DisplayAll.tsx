@@ -112,15 +112,15 @@ function StageShell({
 }
 
 function fitPromptClass(text: string): string {
-  if (text.length > 180) return 'dsp-prompt dsp-prompt-xs'
-  if (text.length > 110) return 'dsp-prompt dsp-prompt-sm'
+  if (text.length > 200) return 'dsp-prompt dsp-prompt-xs'
+  if (text.length > 130) return 'dsp-prompt dsp-prompt-sm'
   return 'dsp-prompt'
 }
 
 function fitChoicesClass(choices: { text: string }[]): string {
   const maxLen = Math.max(0, ...choices.map((c) => c.text.length))
-  if (maxLen > 80) return 'dsp-choices dsp-choices-dense'
-  if (maxLen > 40) return 'dsp-choices dsp-choices-md'
+  if (maxLen > 90) return 'dsp-choices dsp-choices-dense'
+  if (maxLen > 45) return 'dsp-choices dsp-choices-md'
   return 'dsp-choices'
 }
 
@@ -280,8 +280,11 @@ export function DisplayAll() {
                   <div className={fitChoicesClass(question.choices)}>
                     {question.choices.map((choice) => (
                       <div key={choice.id} className="dsp-choice">
-                        <span className="dsp-choice-id">{choice.id}</span>
-                        <span className="dsp-choice-text">{choice.text}</span>
+                        <div className="dsp-choice-face">
+                          <span className="dsp-choice-id">{choice.id}</span>
+                          <span className="dsp-choice-sep">:</span>
+                          <span className="dsp-choice-text">{choice.text}</span>
+                        </div>
                       </div>
                     ))}
                   </div>
