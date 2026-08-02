@@ -2,24 +2,27 @@ import { motion } from 'framer-motion'
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
 import { AnimatedScore } from '../components/AnimatedScore'
-import { MultiplierPicker } from '../components/MultiplierPicker'
 import {
   answeredCount,
   effectivePhase,
-  markTeamAnswered,
+  markTeamChoice,
   markTeamScored,
   questionProgressLabel,
   scoredCount,
   subscribeGame,
   type GameState,
 } from '../lib/game'
-import { getQuestion } from '../lib/questions'
+import {
+  getQuestion,
+  isCorrectChoice,
+  type ChoiceId,
+} from '../lib/questions'
 import {
   DEFAULT_STARTING_SCORE,
   TEAM_IDS,
   applyRound,
   formatDelta,
-  type RoundResult,
+  formatMultiplier,
   type TeamState,
 } from '../lib/scoring'
 import { playRoundSound, unlockAudio } from '../lib/sounds'
@@ -38,8 +41,6 @@ export function StaffTeam() {
   const [game, setGame] = useState<GameState | null>(null)
   const [team, setTeam] = useState<TeamState | null>(null)
   const [bet, setBet] = useState('100')
-  const [multiplier, setMultiplier] = useState(1.2)
-  const [result, setResult] = useState<RoundResult>('correct')
   const [manualScore, setManualScore] = useState('')
   const [startingScore, setStartingScore] = useState(String(DEFAULT_STARTING_SCORE))
   const [busy, setBusy] = useState(false)
@@ -63,13 +64,16 @@ export function StaffTeam() {
   }, [teamId, valid])
 
   const phase = game ? effectivePhase(game) : 'lobby'
+  const canChoose = phase === 'question' || phase === 'waiting'
   const canScore = phase === 'scores'
-  const canAnswer = phase === 'question' || phase === 'waiting'
   const alreadyScored = Boolean(game?.scoredTeams[teamId])
-  const alreadyAnswered = Boolean(game?.answeredTeams[teamId])
+  const selectedChoice = game?.teamChoices[teamId] ?? null
   const doneCount = game ? scoredCount(game) : 0
   const answeredTeamsCount = game ? answeredCount(game) : 0
   const question = game ? getQuestion(game.questionIndex) : null
+  const multiplier = question?.multiplier ?? 1
+  const isCorrect = question ? isCorrectChoice(question, selectedChoice) : false
+  const result = isCorrect ? 'correct' : 'wrong'
 
   const betNum = Number(bet)
   const preview = useMemo(() => {
@@ -87,13 +91,13 @@ export function StaffTeam() {
     }
   }
 
-  async function onMarkAnswered() {
-    if (!canAnswer || alreadyAnswered) return
+  async function onPickChoice(choice: ChoiceId) {
+    if (!canChoose) return
     unlockAudio()
     setBusy(true)
     setError(null)
     try {
-      await markTeamAnswered(teamId)
+      await markTeamChoice(teamId, choice)
     } catch (err) {
       setError(String(err))
     } finally {
@@ -103,7 +107,7 @@ export function StaffTeam() {
 
   async function onSubmitRound(e: FormEvent) {
     e.preventDefault()
-    if (!canScore) return
+    if (!canScore || !question) return
     unlockAudio()
     if (!Number.isFinite(betNum) || betNum <= 0) {
       setError('กรอกเงินเดิมพันให้ถูกต้อง')
@@ -116,7 +120,13 @@ export function StaffTeam() {
     setBusy(true)
     setError(null)
     try {
-      await submitRound(teamId, betNum, multiplier, result)
+      await submitRound(
+        teamId,
+        betNum,
+        multiplier,
+        result,
+        selectedChoice ?? undefined,
+      )
       playRoundSound(result)
       await afterSave()
     } catch (err) {
@@ -173,7 +183,7 @@ export function StaffTeam() {
         <p className="font-score text-base text-[var(--color-ocean-deep)]">
           {canScore
             ? `${doneCount}/${TEAM_IDS.length}`
-            : canAnswer
+            : canChoose
               ? `${answeredTeamsCount}/${TEAM_IDS.length}`
               : `${doneCount}/${TEAM_IDS.length}`}
         </p>
@@ -184,7 +194,7 @@ export function StaffTeam() {
         animate={{ opacity: 1, y: 0 }}
         className="parchment panel mb-3 rounded-xl p-3"
       >
-        <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-start justify-between gap-2">
           <div>
             <p className="text-[0.65rem] font-bold uppercase tracking-[0.28em] text-[var(--color-ink-muted)]">
               สถานะรอบนี้
@@ -193,16 +203,19 @@ export function StaffTeam() {
               {canScore
                 ? alreadyScored
                   ? 'บันทึกแล้ว · รอข้อต่อไป'
-                  : 'ถึงตาแก้คะแนน'
-                : canAnswer
-                  ? alreadyAnswered
-                    ? 'ตอบแล้ว · รอเฉลย'
-                    : 'กำลังทำโจทย์'
-                  : 'รอช่วงแก้คะแนน'}
+                  : 'ใส่เดิมพันแล้วกดยืนยัน'
+                : canChoose
+                  ? selectedChoice
+                    ? `เลือก ${selectedChoice} แล้ว`
+                    : 'เลือกคำตอบ'
+                  : phase === 'reveal'
+                    ? 'ดูเฉลย · รอเปิดกระดาน'
+                    : 'รอเริ่ม'}
             </p>
             {game && phase !== 'lobby' && (
               <p className="mt-0.5 text-xs text-[var(--color-ink-muted)]">
                 {questionProgressLabel(game.questionIndex)}
+                {question ? ` · ×${formatMultiplier(question.multiplier)}` : ''}
               </p>
             )}
           </div>
@@ -213,9 +226,28 @@ export function StaffTeam() {
           )}
         </div>
         {question && (phase === 'reveal' || phase === 'scores') && (
-          <p className="mt-2 rounded-lg bg-[rgba(255,255,255,0.35)] px-2.5 py-1.5 text-xs text-[var(--color-ink-muted)]">
-            เฉลย: <span className="font-semibold text-[var(--color-success)]">{question.answer}</span>
-          </p>
+          <div className="mt-2 rounded-lg bg-[rgba(255,255,255,0.35)] px-2.5 py-1.5 text-xs text-[var(--color-ink-muted)]">
+            <p>
+              เฉลย:{' '}
+              <span className="font-semibold text-[var(--color-success)]">
+                {question.answerLabel}
+              </span>
+            </p>
+            {selectedChoice && (
+              <p className="mt-1">
+                ทีมเลือก {selectedChoice}{' '}
+                <span
+                  className={
+                    isCorrect
+                      ? 'font-semibold text-[var(--color-success)]'
+                      : 'font-semibold text-[var(--color-danger)]'
+                  }
+                >
+                  ({isCorrect ? 'ถูก' : 'ผิด'})
+                </span>
+              </p>
+            )}
+          </div>
         )}
       </motion.div>
 
@@ -241,35 +273,60 @@ export function StaffTeam() {
         )}
       </motion.header>
 
-      {canAnswer && (
-        <section className="parchment panel mb-3 rounded-xl p-4 text-center">
-          <p className="font-display text-lg text-[var(--color-ocean-deep)]">
-            {alreadyAnswered ? 'ทีมนี้กดตอบแล้ว' : 'ทีมนี้ตอบโจทย์แล้วหรือยัง?'}
-          </p>
-          <button
-            type="button"
-            disabled={busy || alreadyAnswered}
-            onClick={() => void onMarkAnswered()}
-            className="btn-gold mt-3 w-full rounded-xl py-3 font-semibold"
-          >
-            {alreadyAnswered ? 'ตอบแล้ว' : 'กดตอบแล้ว'}
-          </button>
-          <p className="mt-2 text-xs text-[var(--color-ink-muted)]">
-            แสดงบนจอใหญ่: ตอบแล้ว {answeredTeamsCount}/{TEAM_IDS.length} ทีม
+      {canChoose && question && (
+        <section className="parchment panel mb-3 space-y-3 rounded-xl p-4">
+          <div>
+            <p className="text-[0.65rem] font-bold uppercase tracking-[0.24em] text-[var(--color-ink-muted)]">
+              โจทย์ · ×{formatMultiplier(question.multiplier)}
+            </p>
+            <p className="mt-1 font-display text-base leading-snug text-[var(--color-ocean-deep)]">
+              {question.prompt}
+            </p>
+          </div>
+          <div className="space-y-2">
+            {question.choices.map((choice) => {
+              const active = selectedChoice === choice.id
+              return (
+                <button
+                  key={choice.id}
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void onPickChoice(choice.id)}
+                  className={`w-full rounded-xl border-2 px-3 py-2.5 text-left transition ${
+                    active
+                      ? 'border-[var(--color-gold)] bg-[rgba(240,192,64,0.28)]'
+                      : 'border-[rgba(42,24,16,0.12)] bg-[rgba(255,255,255,0.28)] hover:border-[rgba(26,90,138,0.35)]'
+                  }`}
+                >
+                  <span className="font-display text-lg text-[var(--color-ocean-deep)]">
+                    {choice.id}.
+                  </span>{' '}
+                  <span className="text-sm leading-snug text-[var(--color-ink)]">
+                    {choice.text}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+          <p className="text-center text-xs text-[var(--color-ink-muted)]">
+            ตอบแล้ว {answeredTeamsCount}/{TEAM_IDS.length} ทีม · เปลี่ยน choice ได้จนกว่า host
+            เปิดเฉลย
           </p>
         </section>
       )}
 
-      {!canScore ? (
-        !canAnswer && (
-          <section className="parchment panel rounded-xl p-5 text-center">
-            <p className="font-display text-xl text-[var(--color-ocean-deep)]">เปิดค้างไว้ได้เลย</p>
-            <p className="mt-1.5 text-sm text-[var(--color-ink-muted)]">
-              พอ host เปิดหน้ากระดานคะแนน ฟอร์มแก้คะแนนจะโผล่ที่นี่อัตโนมัติ
-            </p>
-          </section>
-        )
-      ) : (
+      {phase === 'reveal' && question && (
+        <section className="parchment panel mb-3 rounded-xl p-4">
+          <p className="font-display text-lg text-[var(--color-ocean-deep)]">รอเปิดกระดานคะแนน</p>
+          <p className="mt-1 text-sm text-[var(--color-ink-muted)]">
+            {selectedChoice
+              ? `เลือก ${selectedChoice} แล้ว · ตอน scores ใส่เดิมพันเพื่อคิดคะแนน`
+              : 'ทีมนี้ยังไม่ได้เลือกคำตอบ จะถือว่าผิดเมื่อใส่เดิมพัน'}
+          </p>
+        </section>
+      )}
+
+      {canScore ? (
         <>
           <motion.form
             initial={{ opacity: 0, y: 12 }}
@@ -277,7 +334,33 @@ export function StaffTeam() {
             onSubmit={onSubmitRound}
             className="parchment panel mb-3 space-y-3 rounded-xl p-4"
           >
-            <h2 className="font-display text-base text-[var(--color-ocean-deep)]">บันทึกรอบเดิมพัน</h2>
+            <h2 className="font-display text-base text-[var(--color-ocean-deep)]">
+              เดิมพันรอบนี้
+            </h2>
+
+            <div className="rounded-lg bg-[rgba(255,255,255,0.35)] px-3 py-2 text-sm">
+              <p className="text-[var(--color-ink-muted)]">
+                ตัวคูณข้อนี้: <strong>×{formatMultiplier(multiplier)}</strong>
+              </p>
+              <p className="mt-0.5 text-[var(--color-ink-muted)]">
+                คำตอบ:{' '}
+                {selectedChoice ? (
+                  <>
+                    {selectedChoice}{' '}
+                    <strong className={isCorrect ? 'text-[var(--color-success)]' : 'text-[var(--color-danger)]'}>
+                      ({isCorrect ? 'ถูก' : 'ผิด'})
+                    </strong>
+                  </>
+                ) : (
+                  <strong className="text-[var(--color-danger)]">ไม่ได้เลือก · ผิด</strong>
+                )}
+              </p>
+              <p className="mt-1 text-xs text-[var(--color-ink-muted)]">
+                {isCorrect
+                  ? 'สูตรถูก: คะแนน − เดิมพัน + (เดิมพัน × ตัวคูณ)'
+                  : 'สูตรผิด: คะแนน − เดิมพัน'}
+              </p>
+            </div>
 
             <label className="block">
               <span className="mb-1 block text-xs font-semibold text-[var(--color-ink-muted)]">
@@ -293,41 +376,6 @@ export function StaffTeam() {
                 className="input-field py-2 text-xl font-semibold"
               />
             </label>
-
-            <div>
-              <span className="mb-1.5 block text-xs font-semibold text-[var(--color-ink-muted)]">
-                ตัวคูณ
-              </span>
-              <MultiplierPicker value={multiplier} onChange={setMultiplier} />
-            </div>
-
-            <div>
-              <span className="mb-1.5 block text-xs font-semibold text-[var(--color-ink-muted)]">
-                ผลลัพธ์
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setResult('correct')}
-                  className={`rounded-lg py-2.5 text-base font-bold transition ${
-                    result === 'correct'
-                      ? 'bg-[var(--color-success)] text-white'
-                      : 'btn-sea'
-                  }`}
-                >
-                  ถูก
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setResult('wrong')}
-                  className={`rounded-lg py-2.5 text-base font-bold transition ${
-                    result === 'wrong' ? 'bg-[var(--color-danger)] text-white' : 'btn-sea'
-                  }`}
-                >
-                  ผิด
-                </button>
-              </div>
-            </div>
 
             {preview && (
               <div className="rounded-lg bg-[rgba(255,255,255,0.35)] px-3 py-2.5 text-center">
@@ -347,10 +395,10 @@ export function StaffTeam() {
 
             <button
               type="submit"
-              disabled={busy || !team}
+              disabled={busy || !team || alreadyScored}
               className="btn-gold w-full rounded-lg py-3 text-lg"
             >
-              {busy ? 'กำลังบันทึก…' : 'ยืนยันรอบนี้'}
+              {alreadyScored ? 'บันทึกแล้ว' : busy ? 'กำลังบันทึก…' : 'ยืนยันเดิมพัน'}
             </button>
           </motion.form>
 
@@ -396,6 +444,15 @@ export function StaffTeam() {
             </div>
           </section>
         </>
+      ) : (
+        !canChoose && phase !== 'reveal' && (
+          <section className="parchment panel rounded-xl p-5 text-center">
+            <p className="font-display text-xl text-[var(--color-ocean-deep)]">เปิดค้างไว้ได้เลย</p>
+            <p className="mt-1.5 text-sm text-[var(--color-ink-muted)]">
+              พอ host เริ่มโจทย์ จะมี choice ให้กดตรงนี้
+            </p>
+          </section>
+        )
       )}
 
       {error && (

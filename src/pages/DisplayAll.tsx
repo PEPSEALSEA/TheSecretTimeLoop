@@ -3,7 +3,11 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { GameTimer } from '../components/GameTimer'
 import { TeamGrid } from '../components/TeamGrid'
-import { leaderboardAsset, preloadLeaderboardAssets } from '../lib/assets'
+import {
+  leaderboardAsset,
+  preloadLeaderboardAssets,
+  questionImageAsset,
+} from '../lib/assets'
 import {
   answeredCount as countAnsweredTeams,
   effectivePhase,
@@ -12,7 +16,7 @@ import {
 } from '../lib/game'
 import { getQuestion } from '../lib/questions'
 import type { TeamState } from '../lib/scoring'
-import { TEAM_IDS } from '../lib/scoring'
+import { TEAM_IDS, formatMultiplier } from '../lib/scoring'
 import { playLeaderboardChangeSound, playScoreboardUpdateSound, unlockAudio } from '../lib/sounds'
 import { STAGE_H, STAGE_W, useStageScale } from '../lib/stage'
 import { subscribeAllTeams } from '../lib/teams'
@@ -105,6 +109,12 @@ function StageShell({
       </div>
     </div>
   )
+}
+
+function fitPromptClass(text: string): string {
+  if (text.length > 180) return 'dsp-prompt dsp-prompt-xs'
+  if (text.length > 110) return 'dsp-prompt dsp-prompt-sm'
+  return 'dsp-prompt'
 }
 
 export function DisplayAll() {
@@ -227,6 +237,8 @@ export function DisplayAll() {
             ? `reveal-${game?.questionIndex}`
             : 'scores'
 
+  const hasAnswerImage = Boolean(question?.answerImage)
+
   return (
     <main className="lb-viewport" onPointerDown={unlockAudio}>
       {timerActive && left > 0 && (
@@ -253,8 +265,11 @@ export function DisplayAll() {
               <div className="dsp-center">
                 <ScrollPanel variant="content" className="dsp-scroll-question">
                   <p className="dsp-heading">โจทย์</p>
-                  <p className="dsp-round">รอบที่ {roundNumber}</p>
-                  <p className="dsp-prompt">{question.prompt}</p>
+                  <p className="dsp-round">
+                    ข้อ {roundNumber}
+                    <span className="dsp-mul"> · ×{formatMultiplier(question.multiplier)}</span>
+                  </p>
+                  <p className={fitPromptClass(question.prompt)}>{question.prompt}</p>
                 </ScrollPanel>
               </div>
             </motion.div>
@@ -276,10 +291,35 @@ export function DisplayAll() {
           {phase === 'reveal' && question && (
             <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
               <div className="dsp-center">
-                <ScrollPanel variant="content" className="dsp-scroll-reveal">
+                <ScrollPanel
+                  variant="content"
+                  className={
+                    hasAnswerImage
+                      ? 'dsp-scroll-reveal dsp-scroll-reveal-img'
+                      : 'dsp-scroll-reveal'
+                  }
+                >
                   <p className="dsp-heading">เฉลย</p>
-                  <p className="dsp-round">รอบที่ {roundNumber}</p>
-                  <p className="dsp-answer">{question.answer}</p>
+                  <p className="dsp-round">ข้อ {roundNumber}</p>
+                  <p className="dsp-answer">{question.answerLabel}</p>
+                  {hasAnswerImage && question.answerImage && (
+                    <img
+                      src={questionImageAsset(question.answerImage)}
+                      alt=""
+                      className="dsp-answer-img"
+                      draggable={false}
+                      decoding="sync"
+                    />
+                  )}
+                  <p
+                    className={
+                      hasAnswerImage
+                        ? 'dsp-explain dsp-explain-sm'
+                        : 'dsp-explain'
+                    }
+                  >
+                    {question.explanation}
+                  </p>
                 </ScrollPanel>
               </div>
             </motion.div>

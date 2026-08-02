@@ -87,6 +87,7 @@ export async function submitRound(
   bet: number,
   multiplier: number,
   result: RoundResult,
+  choice?: string,
 ): Promise<TeamState> {
   const current = await ensureTeam(teamId)
   const { nextScore, delta } = applyRound(current.score, bet, multiplier, result)
@@ -97,13 +98,14 @@ export async function submitRound(
     result,
     delta,
     scoreAfter: nextScore,
+    choice,
     at,
   }
   const next: TeamState = {
     ...current,
     score: nextScore,
     updatedAt: at,
-    lastRound: { bet, multiplier, result, delta },
+    lastRound: { bet, multiplier, result, delta, choice },
     history: [...(current.history ?? []), historyEntry],
   }
   await set(teamRef(teamId), next)

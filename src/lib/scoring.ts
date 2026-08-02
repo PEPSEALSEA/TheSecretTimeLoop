@@ -1,4 +1,4 @@
-export const MULTIPLIERS = [1.1, 1.2, 1.3, 1.4, 1.5] as const
+export const MULTIPLIERS = [1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7] as const
 
 export type Multiplier = (typeof MULTIPLIERS)[number]
 export type RoundResult = 'correct' | 'wrong'
@@ -9,6 +9,7 @@ export type RoundHistoryEntry = {
   result: RoundResult
   delta: number
   scoreAfter: number
+  choice?: string
   at: number
 }
 
@@ -17,6 +18,7 @@ export type LastRound = {
   multiplier: number
   result: RoundResult
   delta: number
+  choice?: string
 }
 
 export type TeamState = {
@@ -70,4 +72,8 @@ export function formatDelta(delta: number): string {
   const rounded = Math.round(delta)
   if (rounded > 0) return `+${rounded.toLocaleString('th-TH')}`
   return rounded.toLocaleString('th-TH')
+}
+
+export function formatMultiplier(m: number): string {
+  return Number.isInteger(m) ? String(m) : m.toFixed(1)
 }

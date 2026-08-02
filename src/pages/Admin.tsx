@@ -16,7 +16,7 @@ import {
   type GameState,
 } from '../lib/game'
 import { QUESTIONS, getQuestion } from '../lib/questions'
-import { TEAM_IDS } from '../lib/scoring'
+import { TEAM_IDS, formatMultiplier } from '../lib/scoring'
 import { remainingMs, useNow } from '../lib/timer'
 
 const phaseLabel: Record<string, string> = {
@@ -125,14 +125,37 @@ export function Admin() {
 
         {question && (phase === 'question' || phase === 'waiting' || phase === 'reveal') && (
           <div className="mt-4 rounded-xl border border-dashed border-[rgba(42,24,16,0.14)] px-4 py-3">
-            <p className="text-sm text-[var(--color-ink-muted)]">โจทย์</p>
+            <p className="text-sm text-[var(--color-ink-muted)]">
+              โจทย์ · ×{formatMultiplier(question.multiplier)} · {question.durationSec}s
+            </p>
             <p className="mt-1 font-display text-lg text-[var(--color-ocean-deep)]">
               {question.prompt}
             </p>
             {(phase === 'reveal' || phase === 'waiting') && (
               <p className="mt-2 text-sm text-[var(--color-success)]">
-                เฉลย: {question.answer}
+                เฉลย: {question.answerLabel}
               </p>
+            )}
+            {(phase === 'question' || phase === 'waiting') && game && (
+              <div className="mt-3 grid grid-cols-8 gap-1.5">
+                {TEAM_IDS.map((id) => {
+                  const choice = game.teamChoices[id]
+                  return (
+                    <div
+                      key={id}
+                      className={`rounded-lg py-1.5 text-center text-xs font-bold ${
+                        choice
+                          ? 'bg-[rgba(45,138,94,0.18)] text-[var(--color-success)]'
+                          : 'bg-[rgba(42,24,16,0.06)] text-[var(--color-ink-muted)]'
+                      }`}
+                      title={choice ? `เลือก ${choice}` : 'ยังไม่ตอบ'}
+                    >
+                      {id}
+                      {choice ? `·${choice}` : ''}
+                    </div>
+                  )
+                })}
+              </div>
             )}
           </div>
         )}

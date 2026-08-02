@@ -1,6 +1,6 @@
 import { onValue, ref, set, update, type Unsubscribe } from 'firebase/database'
 import { db } from './firebase'
-import { getQuestion, QUESTIONS } from './questions'
+import { getQuestion, QUESTIONS, type ChoiceId } from './questions'
 import { TEAM_IDS } from './scoring'
 
 export type GamePhase = 'lobby' | 'question' | 'waiting' | 'reveal' | 'scores' | 'finished'
@@ -10,7 +10,7 @@ export type GameState = {
   questionIndex: number
   endsAt: number | null
   scoredTeams: Record<string, boolean>
-  answeredTeams: Record<string, boolean>
+  teamChoices: Record<string, ChoiceId>
 }
 
 export const DEFAULT_GAME: GameState = {
@@ -18,11 +18,28 @@ export const DEFAULT_GAME: GameState = {
   questionIndex: 0,
   endsAt: null,
   scoredTeams: {},
-  answeredTeams: {},
+  teamChoices: {},
 }
+
+const CHOICE_IDS: ChoiceId[] = ['ก', 'ข', 'ค', 'ง']
 
 function gameRef() {
   return ref(db, 'game')
+}
+
+function normalizeChoice(raw: unknown): ChoiceId | null {
+  if (typeof raw !== 'string') return null
+  return CHOICE_IDS.includes(raw as ChoiceId) ? (raw as ChoiceId) : null
+}
+
+function normalizeChoices(raw: unknown): Record<string, ChoiceId> {
+  if (!raw || typeof raw !== 'object') return {}
+  const out: Record<string, ChoiceId> = {}
+  for (const [teamId, value] of Object.entries(raw as Record<string, unknown>)) {
+    const choice = normalizeChoice(value)
+    if (choice) out[teamId] = choice
+  }
+  return out
 }
 
 function normalizeGame(raw: unknown): GameState {
@@ -34,19 +51,16 @@ function normalizeGame(raw: unknown): GameState {
     endsAt: typeof data.endsAt === 'number' ? data.endsAt : null,
     scoredTeams:
       data.scoredTeams && typeof data.scoredTeams === 'object' ? data.scoredTeams : {},
-    answeredTeams:
-      data.answeredTeams && typeof data.answeredTeams === 'object'
-        ? data.answeredTeams
-        : {},
+    teamChoices: normalizeChoices(data.teamChoices),
   }
 }
 
 export function answeredCount(game: GameState): number {
-  return TEAM_IDS.filter((id) => game.answeredTeams[id]).length
+  return TEAM_IDS.filter((id) => Boolean(game.teamChoices[id])).length
 }
 
-export async function markTeamAnswered(teamId: string): Promise<void> {
-  await update(gameRef(), { [`answeredTeams/${teamId}`]: true })
+export async function markTeamChoice(teamId: string, choice: ChoiceId): Promise<void> {
+  await update(gameRef(), { [`teamChoices/${teamId}`]: choice })
 }
 
 export function subscribeGame(onData: (game: GameState) => void): Unsubscribe {
@@ -77,7 +91,7 @@ export async function startGame(): Promise<void> {
     questionIndex: 0,
     endsAt: Date.now() + q.durationSec * 1000,
     scoredTeams: {},
-    answeredTeams: {},
+    teamChoices: {},
   } satisfies GameState)
 }
 
@@ -106,7 +120,7 @@ export async function nextQuestion(currentIndex: number): Promise<void> {
       questionIndex: currentIndex,
       endsAt: null,
       scoredTeams: {},
-      answeredTeams: {},
+      teamChoices: {},
     } satisfies GameState)
     return
   }
@@ -115,7 +129,7 @@ export async function nextQuestion(currentIndex: number): Promise<void> {
     questionIndex: next,
     endsAt: Date.now() + q.durationSec * 1000,
     scoredTeams: {},
-    answeredTeams: {},
+    teamChoices: {},
   } satisfies GameState)
 }
 
