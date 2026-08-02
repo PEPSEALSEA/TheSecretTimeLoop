@@ -411,9 +411,10 @@
     filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.3)) drop-shadow(0 0 14px rgba(201, 148, 26, 0.55));
   }
 
-  .lb-screen-anim {
+  .dsp-layer {
     position: absolute;
     inset: 0;
+    will-change: opacity, transform;
   }
 
   .dsp-center {

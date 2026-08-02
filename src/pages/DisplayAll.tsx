@@ -18,6 +18,18 @@ import { STAGE_H, STAGE_W, useStageScale } from '../lib/stage'
 import { subscribeAllTeams } from '../lib/teams'
 import { remainingMs, useNow } from '../lib/timer'
 
+const panelTransition = {
+  duration: 0.42,
+  ease: [0.22, 1, 0.36, 1] as const,
+}
+
+const panelMotion = {
+  initial: { opacity: 0, y: 18, scale: 0.96 },
+  animate: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, y: -12, scale: 0.98 },
+  transition: panelTransition,
+}
+
 function rankKey(teams: Record<string, TeamState>): string {
   return TEAM_IDS.map((id) => `${id}:${teams[id]?.score ?? 0}`)
     .sort((a, b) => {
@@ -39,32 +51,6 @@ function RoundBadge({ round }: { round: number }) {
         decoding="sync"
       />
       <span className="lb-round-text">รอบที่ {round}</span>
-    </div>
-  )
-}
-
-function DisplayStage({
-  stageScale,
-  children,
-  className = '',
-}: {
-  stageScale: number
-  children: ReactNode
-  className?: string
-}) {
-  return (
-    <div className="lb-screen">
-      <div
-        className={`lb-stage ${className}`}
-        style={{
-          width: STAGE_W,
-          height: STAGE_H,
-          transform: `scale(${stageScale})`,
-          backgroundImage: `url(${leaderboardAsset('bg.jpg')})`,
-        }}
-      >
-        {children}
-      </div>
     </div>
   )
 }
@@ -93,6 +79,30 @@ function ScrollPanel({
         decoding="sync"
       />
       <div className="dsp-scroll-body">{children}</div>
+    </div>
+  )
+}
+
+function StageShell({
+  stageScale,
+  children,
+}: {
+  stageScale: number
+  children: ReactNode
+}) {
+  return (
+    <div className="lb-screen">
+      <div
+        className="lb-stage"
+        style={{
+          width: STAGE_W,
+          height: STAGE_H,
+          transform: `scale(${stageScale})`,
+          backgroundImage: `url(${leaderboardAsset('bg.jpg')})`,
+        }}
+      >
+        {children}
+      </div>
     </div>
   )
 }
@@ -181,28 +191,41 @@ export function DisplayAll() {
     const pct = Math.round(loadProgress * 100)
     return (
       <main className="lb-viewport">
-        <DisplayStage stageScale={stageScale}>
-          <div className="dsp-center">
-            <ScrollPanel variant="status" className="dsp-scroll-compact">
-              <p className="dsp-kicker">The Secret Time Loop</p>
-              <h1 className="dsp-title">กำลังเตรียมกระดาน</h1>
-              <div
-                className="dsp-progress"
-                role="progressbar"
-                aria-valuenow={pct}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-label="ความคืบหน้าการโหลด"
-              >
-                <div className="dsp-progress-bar" style={{ width: `${pct}%` }} />
-              </div>
-              <p className="dsp-sub font-score">{pct}%</p>
-            </ScrollPanel>
+        <StageShell stageScale={stageScale}>
+          <div className="dsp-layer">
+            <div className="dsp-center">
+              <ScrollPanel variant="status" className="dsp-scroll-compact">
+                <p className="dsp-kicker">The Secret Time Loop</p>
+                <h1 className="dsp-title">กำลังเตรียมกระดาน</h1>
+                <div
+                  className="dsp-progress"
+                  role="progressbar"
+                  aria-valuenow={pct}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label="ความคืบหน้าการโหลด"
+                >
+                  <div className="dsp-progress-bar" style={{ width: `${pct}%` }} />
+                </div>
+                <p className="dsp-sub font-score">{pct}%</p>
+              </ScrollPanel>
+            </div>
           </div>
-        </DisplayStage>
+        </StageShell>
       </main>
     )
   }
+
+  const panelKey =
+    phase === 'lobby'
+      ? 'lobby'
+      : phase === 'question'
+        ? `q-${game?.questionIndex}`
+        : phase === 'waiting'
+          ? 'waiting'
+          : phase === 'reveal'
+            ? `reveal-${game?.questionIndex}`
+            : 'scores'
 
   return (
     <main className="lb-viewport" onPointerDown={unlockAudio}>
@@ -210,16 +233,10 @@ export function DisplayAll() {
         <GameTimer remainingMs={left} totalMs={totalMs} />
       )}
 
-      <AnimatePresence mode="wait">
-        {phase === 'lobby' && (
-          <motion.section
-            key="lobby"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="lb-screen-anim"
-          >
-            <DisplayStage stageScale={stageScale}>
+      <StageShell stageScale={stageScale}>
+        <AnimatePresence mode="sync" initial={false}>
+          {phase === 'lobby' && (
+            <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
               <div className="dsp-center">
                 <ScrollPanel variant="status" className="dsp-scroll-status-lg">
                   <h1 className="dsp-title dsp-title-hero">รอเริ่มเกม</h1>
@@ -228,19 +245,11 @@ export function DisplayAll() {
                   ← หน้าแรก
                 </Link>
               </div>
-            </DisplayStage>
-          </motion.section>
-        )}
+            </motion.div>
+          )}
 
-        {phase === 'question' && question && (
-          <motion.section
-            key={`q-${game?.questionIndex}`}
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.02 }}
-            className="lb-screen-anim"
-          >
-            <DisplayStage stageScale={stageScale}>
+          {phase === 'question' && question && (
+            <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
               <div className="dsp-center">
                 <ScrollPanel variant="content" className="dsp-scroll-question">
                   <p className="dsp-heading">โจทย์</p>
@@ -248,19 +257,11 @@ export function DisplayAll() {
                   <p className="dsp-prompt">{question.prompt}</p>
                 </ScrollPanel>
               </div>
-            </DisplayStage>
-          </motion.section>
-        )}
+            </motion.div>
+          )}
 
-        {phase === 'waiting' && (
-          <motion.section
-            key="waiting"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="lb-screen-anim"
-          >
-            <DisplayStage stageScale={stageScale}>
+          {phase === 'waiting' && (
+            <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
               <div className="dsp-center">
                 <ScrollPanel variant="status" className="dsp-scroll-status-lg">
                   <h1 className="dsp-title dsp-title-hero">หมดเวลา</h1>
@@ -269,19 +270,11 @@ export function DisplayAll() {
                   </p>
                 </ScrollPanel>
               </div>
-            </DisplayStage>
-          </motion.section>
-        )}
+            </motion.div>
+          )}
 
-        {phase === 'reveal' && question && (
-          <motion.section
-            key={`reveal-${game?.questionIndex}`}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="lb-screen-anim"
-          >
-            <DisplayStage stageScale={stageScale}>
+          {phase === 'reveal' && question && (
+            <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
               <div className="dsp-center">
                 <ScrollPanel variant="content" className="dsp-scroll-reveal">
                   <p className="dsp-heading">เฉลย</p>
@@ -289,19 +282,11 @@ export function DisplayAll() {
                   <p className="dsp-answer">{question.answer}</p>
                 </ScrollPanel>
               </div>
-            </DisplayStage>
-          </motion.section>
-        )}
+            </motion.div>
+          )}
 
-        {isBoard && (
-          <motion.section
-            key="scores"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="lb-screen-anim"
-          >
-            <DisplayStage stageScale={stageScale}>
+          {isBoard && (
+            <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
               <div className="lb-inner">
                 <header className="lb-header">
                   <RoundBadge round={roundNumber} />
@@ -317,10 +302,10 @@ export function DisplayAll() {
 
                 <TeamGrid teams={teams} scoredTeams={game?.scoredTeams ?? {}} />
               </div>
-            </DisplayStage>
-          </motion.section>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </StageShell>
     </main>
   )
 }
