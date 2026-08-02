@@ -4,7 +4,9 @@ import { Navigate, useParams } from 'react-router-dom'
 import { AnimatedScore } from '../components/AnimatedScore'
 import { MultiplierPicker } from '../components/MultiplierPicker'
 import {
+  answeredCount,
   effectivePhase,
+  markTeamAnswered,
   markTeamScored,
   questionProgressLabel,
   scoredCount,
@@ -62,8 +64,11 @@ export function StaffTeam() {
 
   const phase = game ? effectivePhase(game) : 'lobby'
   const canScore = phase === 'scores'
+  const canAnswer = phase === 'question' || phase === 'waiting'
   const alreadyScored = Boolean(game?.scoredTeams[teamId])
+  const alreadyAnswered = Boolean(game?.answeredTeams[teamId])
   const doneCount = game ? scoredCount(game) : 0
+  const answeredTeamsCount = game ? answeredCount(game) : 0
   const question = game ? getQuestion(game.questionIndex) : null
 
   const betNum = Number(bet)
@@ -79,6 +84,20 @@ export function StaffTeam() {
       await markTeamScored(teamId)
       setSavedFlash(true)
       window.setTimeout(() => setSavedFlash(false), 1200)
+    }
+  }
+
+  async function onMarkAnswered() {
+    if (!canAnswer || alreadyAnswered) return
+    unlockAudio()
+    setBusy(true)
+    setError(null)
+    try {
+      await markTeamAnswered(teamId)
+    } catch (err) {
+      setError(String(err))
+    } finally {
+      setBusy(false)
     }
   }
 
@@ -152,7 +171,11 @@ export function StaffTeam() {
           Staff · โต๊ะ {teamId}
         </p>
         <p className="font-score text-base text-[var(--color-ocean-deep)]">
-          {doneCount}/{TEAM_IDS.length}
+          {canScore
+            ? `${doneCount}/${TEAM_IDS.length}`
+            : canAnswer
+              ? `${answeredTeamsCount}/${TEAM_IDS.length}`
+              : `${doneCount}/${TEAM_IDS.length}`}
         </p>
       </div>
 
@@ -171,7 +194,11 @@ export function StaffTeam() {
                 ? alreadyScored
                   ? 'บันทึกแล้ว · รอข้อต่อไป'
                   : 'ถึงตาแก้คะแนน'
-                : 'รอช่วงแก้คะแนน'}
+                : canAnswer
+                  ? alreadyAnswered
+                    ? 'ตอบแล้ว · รอเฉลย'
+                    : 'กำลังทำโจทย์'
+                  : 'รอช่วงแก้คะแนน'}
             </p>
             {game && phase !== 'lobby' && (
               <p className="mt-0.5 text-xs text-[var(--color-ink-muted)]">
@@ -214,13 +241,34 @@ export function StaffTeam() {
         )}
       </motion.header>
 
-      {!canScore ? (
-        <section className="parchment panel rounded-xl p-5 text-center">
-          <p className="font-display text-xl text-[var(--color-ocean-deep)]">เปิดค้างไว้ได้เลย</p>
-          <p className="mt-1.5 text-sm text-[var(--color-ink-muted)]">
-            พอ host เปิดหน้ากระดานคะแนน ฟอร์มแก้คะแนนจะโผล่ที่นี่อัตโนมัติ
+      {canAnswer && (
+        <section className="parchment panel mb-3 rounded-xl p-4 text-center">
+          <p className="font-display text-lg text-[var(--color-ocean-deep)]">
+            {alreadyAnswered ? 'ทีมนี้กดตอบแล้ว' : 'ทีมนี้ตอบโจทย์แล้วหรือยัง?'}
+          </p>
+          <button
+            type="button"
+            disabled={busy || alreadyAnswered}
+            onClick={() => void onMarkAnswered()}
+            className="btn-gold mt-3 w-full rounded-xl py-3 font-semibold"
+          >
+            {alreadyAnswered ? 'ตอบแล้ว' : 'กดตอบแล้ว'}
+          </button>
+          <p className="mt-2 text-xs text-[var(--color-ink-muted)]">
+            แสดงบนจอใหญ่: ตอบแล้ว {answeredTeamsCount}/{TEAM_IDS.length} ทีม
           </p>
         </section>
+      )}
+
+      {!canScore ? (
+        !canAnswer && (
+          <section className="parchment panel rounded-xl p-5 text-center">
+            <p className="font-display text-xl text-[var(--color-ocean-deep)]">เปิดค้างไว้ได้เลย</p>
+            <p className="mt-1.5 text-sm text-[var(--color-ink-muted)]">
+              พอ host เปิดหน้ากระดานคะแนน ฟอร์มแก้คะแนนจะโผล่ที่นี่อัตโนมัติ
+            </p>
+          </section>
+        )
       ) : (
         <>
           <motion.form

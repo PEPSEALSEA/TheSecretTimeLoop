@@ -3,6 +3,8 @@ export const LEADERBOARD_IMAGE_FILES = [
   'title-scroll.png',
   'round-scroll.png',
   'team-card.png',
+  'content-scroll.png',
+  'status-board.png',
 ] as const
 
 export function leaderboardAsset(file: string): string {

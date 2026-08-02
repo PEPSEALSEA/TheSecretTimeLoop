@@ -10,6 +10,7 @@ export type GameState = {
   questionIndex: number
   endsAt: number | null
   scoredTeams: Record<string, boolean>
+  answeredTeams: Record<string, boolean>
 }
 
 export const DEFAULT_GAME: GameState = {
@@ -17,6 +18,7 @@ export const DEFAULT_GAME: GameState = {
   questionIndex: 0,
   endsAt: null,
   scoredTeams: {},
+  answeredTeams: {},
 }
 
 function gameRef() {
@@ -32,7 +34,19 @@ function normalizeGame(raw: unknown): GameState {
     endsAt: typeof data.endsAt === 'number' ? data.endsAt : null,
     scoredTeams:
       data.scoredTeams && typeof data.scoredTeams === 'object' ? data.scoredTeams : {},
+    answeredTeams:
+      data.answeredTeams && typeof data.answeredTeams === 'object'
+        ? data.answeredTeams
+        : {},
   }
+}
+
+export function answeredCount(game: GameState): number {
+  return TEAM_IDS.filter((id) => game.answeredTeams[id]).length
+}
+
+export async function markTeamAnswered(teamId: string): Promise<void> {
+  await update(gameRef(), { [`answeredTeams/${teamId}`]: true })
 }
 
 export function subscribeGame(onData: (game: GameState) => void): Unsubscribe {
@@ -63,6 +77,7 @@ export async function startGame(): Promise<void> {
     questionIndex: 0,
     endsAt: Date.now() + q.durationSec * 1000,
     scoredTeams: {},
+    answeredTeams: {},
   } satisfies GameState)
 }
 
@@ -91,6 +106,7 @@ export async function nextQuestion(currentIndex: number): Promise<void> {
       questionIndex: currentIndex,
       endsAt: null,
       scoredTeams: {},
+      answeredTeams: {},
     } satisfies GameState)
     return
   }
@@ -99,6 +115,7 @@ export async function nextQuestion(currentIndex: number): Promise<void> {
     questionIndex: next,
     endsAt: Date.now() + q.durationSec * 1000,
     scoredTeams: {},
+    answeredTeams: {},
   } satisfies GameState)
 }
 

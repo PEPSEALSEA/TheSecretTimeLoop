@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
+  answeredCount,
   effectivePhase,
   lockQuestion,
   nextQuestion,
@@ -40,6 +41,7 @@ export function Admin() {
   const now = useNow(timerActive || phase === 'waiting')
   const left = remainingMs(game?.endsAt ?? null, now)
   const doneCount = game ? scoredCount(game) : 0
+  const answeredTeamsCount = game ? answeredCount(game) : 0
 
   async function run(action: () => Promise<void>) {
     setBusy(true)
@@ -96,6 +98,16 @@ export function Admin() {
               </p>
               <p className="font-score text-2xl text-[var(--color-ocean-deep)]">
                 {Math.ceil(left / 1000)}s
+              </p>
+            </div>
+          )}
+          {(phase === 'question' || phase === 'waiting') && (
+            <div className="rounded-xl bg-[rgba(255,255,255,0.4)] px-4 py-2 text-center">
+              <p className="text-[0.65rem] font-bold uppercase tracking-[0.24em] text-[var(--color-ink-muted)]">
+                ตอบแล้ว
+              </p>
+              <p className="font-score text-2xl text-[var(--color-ocean-deep)]">
+                {answeredTeamsCount}/{TEAM_IDS.length}
               </p>
             </div>
           )}

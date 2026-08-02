@@ -1,12 +1,12 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { GameTimer } from '../components/GameTimer'
 import { TeamGrid } from '../components/TeamGrid'
 import { leaderboardAsset, preloadLeaderboardAssets } from '../lib/assets'
 import {
+  answeredCount as countAnsweredTeams,
   effectivePhase,
-  questionProgressLabel,
   subscribeGame,
   type GameState,
 } from '../lib/game'
@@ -39,6 +39,60 @@ function RoundBadge({ round }: { round: number }) {
         decoding="sync"
       />
       <span className="lb-round-text">รอบที่ {round}</span>
+    </div>
+  )
+}
+
+function DisplayStage({
+  stageScale,
+  children,
+  className = '',
+}: {
+  stageScale: number
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <div className="lb-screen">
+      <div
+        className={`lb-stage ${className}`}
+        style={{
+          width: STAGE_W,
+          height: STAGE_H,
+          transform: `scale(${stageScale})`,
+          backgroundImage: `url(${leaderboardAsset('bg.jpg')})`,
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  )
+}
+
+function ScrollPanel({
+  variant,
+  children,
+  className = '',
+}: {
+  variant: 'content' | 'status'
+  children: ReactNode
+  className?: string
+}) {
+  const src =
+    variant === 'content'
+      ? leaderboardAsset('content-scroll.png')
+      : leaderboardAsset('status-board.png')
+
+  return (
+    <div className={`dsp-scroll dsp-scroll-${variant} ${className}`.trim()}>
+      <img
+        src={src}
+        alt=""
+        className="dsp-scroll-img"
+        draggable={false}
+        decoding="sync"
+      />
+      <div className="dsp-scroll-body">{children}</div>
     </div>
   )
 }
@@ -76,9 +130,9 @@ export function DisplayAll() {
   const totalMs = (question?.durationSec ?? 0) * 1000
   const isBoard = phase === 'scores' || phase === 'finished'
   const roundNumber = (game?.questionIndex ?? 0) + 1
+  const answeredCount = game ? countAnsweredTeams(game) : 0
 
   useEffect(() => {
-    if (!isBoard) return
     const prevHtml = document.documentElement.style.overflow
     const prevBody = document.body.style.overflow
     document.documentElement.style.overflow = 'hidden'
@@ -87,7 +141,7 @@ export function DisplayAll() {
       document.documentElement.style.overflow = prevHtml
       document.body.style.overflow = prevBody
     }
-  }, [isBoard])
+  }, [])
 
   useEffect(() => {
     if (phase !== 'scores') return
@@ -126,41 +180,32 @@ export function DisplayAll() {
   if (!assetsReady) {
     const pct = Math.round(loadProgress * 100)
     return (
-      <main className="pirate-scene sea-grain relative flex min-h-dvh flex-col items-center justify-center px-4 py-6 text-center">
-        <p className="font-pirate text-2xl text-[var(--color-ocean)] md:text-3xl">
-          The Secret Time Loop
-        </p>
-        <h1 className="font-display title-glow mt-3 text-[clamp(2rem,6vw,3.5rem)]">
-          กำลังเตรียมกระดาน
-        </h1>
-        <p className="mt-3 text-[var(--color-ink-muted)]">โหลดรูปและฟอนต์ก่อนเข้าเกม</p>
-        <div
-          className="mt-8 h-2 w-full max-w-sm overflow-hidden rounded-full bg-[rgba(12,58,94,0.15)]"
-          role="progressbar"
-          aria-valuenow={pct}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-label="ความคืบหน้าการโหลด"
-        >
-          <div
-            className="h-full rounded-full bg-[var(--color-gold)] transition-[width] duration-200 ease-out"
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-        <p className="mt-3 font-score text-sm text-[var(--color-ink-muted)]">{pct}%</p>
+      <main className="lb-viewport">
+        <DisplayStage stageScale={stageScale}>
+          <div className="dsp-center">
+            <ScrollPanel variant="status" className="dsp-scroll-compact">
+              <p className="dsp-kicker">The Secret Time Loop</p>
+              <h1 className="dsp-title">กำลังเตรียมกระดาน</h1>
+              <div
+                className="dsp-progress"
+                role="progressbar"
+                aria-valuenow={pct}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label="ความคืบหน้าการโหลด"
+              >
+                <div className="dsp-progress-bar" style={{ width: `${pct}%` }} />
+              </div>
+              <p className="dsp-sub font-score">{pct}%</p>
+            </ScrollPanel>
+          </div>
+        </DisplayStage>
       </main>
     )
   }
 
   return (
-    <main
-      className={
-        isBoard
-          ? 'lb-viewport'
-          : 'pirate-scene sea-grain relative min-h-dvh px-4 py-6 md:px-8 md:py-10'
-      }
-      onPointerDown={unlockAudio}
-    >
+    <main className="lb-viewport" onPointerDown={unlockAudio}>
       {timerActive && left > 0 && (
         <GameTimer remainingMs={left} totalMs={totalMs} />
       )}
@@ -169,26 +214,21 @@ export function DisplayAll() {
         {phase === 'lobby' && (
           <motion.section
             key="lobby"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            className="mx-auto flex min-h-[70dvh] max-w-5xl flex-col items-center justify-center text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="lb-screen-anim"
           >
-            <p className="font-pirate text-2xl text-[var(--color-ocean)] md:text-3xl">
-              The Secret Time Loop
-            </p>
-            <h1 className="font-display title-glow mt-3 text-[clamp(2.4rem,7vw,4.5rem)]">
-              รอเริ่มเกม
-            </h1>
-            <p className="mt-4 text-[var(--color-ink-muted)]">
-              แอดมินกดเริ่มที่หน้า /admin
-            </p>
-            <Link
-              to="/"
-              className="mt-8 text-sm text-[var(--color-ink-muted)] no-underline hover:text-[var(--color-ocean)]"
-            >
-              ← หน้าแรก
-            </Link>
+            <DisplayStage stageScale={stageScale}>
+              <div className="dsp-center">
+                <ScrollPanel variant="status" className="dsp-scroll-status-lg">
+                  <h1 className="dsp-title dsp-title-hero">รอเริ่มเกม</h1>
+                </ScrollPanel>
+                <Link to="/" className="dsp-back-link">
+                  ← หน้าแรก
+                </Link>
+              </div>
+            </DisplayStage>
           </motion.section>
         )}
 
@@ -198,16 +238,17 @@ export function DisplayAll() {
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.02 }}
-            className="mx-auto flex min-h-[70dvh] max-w-5xl flex-col justify-center px-2"
+            className="lb-screen-anim"
           >
-            <p className="text-sm font-bold uppercase tracking-[0.32em] text-[var(--color-ink-muted)]">
-              {questionProgressLabel(game?.questionIndex ?? 0)}
-            </p>
-            <div className="parchment panel mt-4 rounded-[2rem] p-8 md:p-14">
-              <h1 className="font-display title-glow text-[clamp(2rem,6vw,4rem)] leading-tight text-[var(--color-ocean-deep)]">
-                {question.prompt}
-              </h1>
-            </div>
+            <DisplayStage stageScale={stageScale}>
+              <div className="dsp-center">
+                <ScrollPanel variant="content" className="dsp-scroll-question">
+                  <p className="dsp-heading">โจทย์</p>
+                  <p className="dsp-round">รอบที่ {roundNumber}</p>
+                  <p className="dsp-prompt">{question.prompt}</p>
+                </ScrollPanel>
+              </div>
+            </DisplayStage>
           </motion.section>
         )}
 
@@ -217,17 +258,18 @@ export function DisplayAll() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="mx-auto flex min-h-[70dvh] max-w-4xl flex-col items-center justify-center text-center"
+            className="lb-screen-anim"
           >
-            <p className="text-sm font-bold uppercase tracking-[0.32em] text-[var(--color-ink-muted)]">
-              {questionProgressLabel(game?.questionIndex ?? 0)}
-            </p>
-            <h1 className="font-display title-glow mt-4 text-[clamp(2.2rem,6vw,4rem)]">
-              หมดเวลา
-            </h1>
-            <p className="mt-3 text-lg text-[var(--color-ink-muted)]">
-              รอแอดมินเปิดเฉลย
-            </p>
+            <DisplayStage stageScale={stageScale}>
+              <div className="dsp-center">
+                <ScrollPanel variant="status" className="dsp-scroll-status-lg">
+                  <h1 className="dsp-title dsp-title-hero">หมดเวลา</h1>
+                  <p className="dsp-answered-count">
+                    ตอบแล้ว {answeredCount}/{TEAM_IDS.length} ทีม
+                  </p>
+                </ScrollPanel>
+              </div>
+            </DisplayStage>
           </motion.section>
         )}
 
@@ -237,17 +279,17 @@ export function DisplayAll() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="mx-auto flex min-h-[70dvh] max-w-5xl flex-col justify-center"
+            className="lb-screen-anim"
           >
-            <p className="text-sm font-bold uppercase tracking-[0.32em] text-[var(--color-ink-muted)]">
-              เฉลย · {questionProgressLabel(game?.questionIndex ?? 0)}
-            </p>
-            <div className="parchment panel mt-4 rounded-[2rem] p-8 md:p-14">
-              <p className="text-sm text-[var(--color-ink-muted)]">{question.prompt}</p>
-              <h1 className="font-display title-glow mt-4 text-[clamp(2.2rem,6vw,4.2rem)] text-[var(--color-ocean-deep)]">
-                {question.answer}
-              </h1>
-            </div>
+            <DisplayStage stageScale={stageScale}>
+              <div className="dsp-center">
+                <ScrollPanel variant="content" className="dsp-scroll-reveal">
+                  <p className="dsp-heading">เฉลย</p>
+                  <p className="dsp-round">รอบที่ {roundNumber}</p>
+                  <p className="dsp-answer">{question.answer}</p>
+                </ScrollPanel>
+              </div>
+            </DisplayStage>
           </motion.section>
         )}
 
@@ -257,17 +299,9 @@ export function DisplayAll() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="lb-screen"
+            className="lb-screen-anim"
           >
-            <div
-              className="lb-stage"
-              style={{
-                width: STAGE_W,
-                height: STAGE_H,
-                transform: `scale(${stageScale})`,
-                backgroundImage: `url(${leaderboardAsset('bg.jpg')})`,
-              }}
-            >
+            <DisplayStage stageScale={stageScale}>
               <div className="lb-inner">
                 <header className="lb-header">
                   <RoundBadge round={roundNumber} />
@@ -283,7 +317,7 @@ export function DisplayAll() {
 
                 <TeamGrid teams={teams} scoredTeams={game?.scoredTeams ?? {}} />
               </div>
-            </div>
+            </DisplayStage>
           </motion.section>
         )}
       </AnimatePresence>
