@@ -6,6 +6,7 @@ import {
   effectivePhase,
   lockQuestion,
   nextQuestion,
+  nextQuestionLabel,
   questionProgressLabel,
   resetGame,
   scoredCount,
@@ -15,7 +16,7 @@ import {
   subscribeGame,
   type GameState,
 } from '../lib/game'
-import { QUESTIONS, getQuestion } from '../lib/questions'
+import { QUESTIONS, ROUND_LABEL, TOTAL_QUESTIONS, getQuestion } from '../lib/questions'
 import { TEAM_IDS, formatMultiplier } from '../lib/scoring'
 import { remainingMs, useNow } from '../lib/timer'
 
@@ -188,7 +189,7 @@ export function Admin() {
               onClick={() => run(startGame)}
               className="btn-gold rounded-xl px-5 py-3 font-semibold"
             >
-              เริ่มเกมข้อ 1
+              เริ่มเกม {ROUND_LABEL} ({TOTAL_QUESTIONS} ข้อ)
             </button>
           )}
 
@@ -232,9 +233,10 @@ export function Admin() {
               onClick={() => run(() => nextQuestion(game.questionIndex))}
               className="btn-gold rounded-xl px-5 py-3 font-semibold"
             >
-              {game.questionIndex + 1 >= QUESTIONS.length
-                ? 'จบเกม'
-                : `ข้อต่อไป (${doneCount}/${TEAM_IDS.length})`}
+              {nextQuestionLabel(game.questionIndex)}
+              {game.questionIndex + 1 < QUESTIONS.length
+                ? ` · staff ${doneCount}/${TEAM_IDS.length}`
+                : ''}
             </button>
           )}
 

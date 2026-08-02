@@ -322,14 +322,20 @@
   .lb-round-text {
     position: relative;
     z-index: 1;
-    max-width: 3.4em;
+    max-width: 3.8em;
     text-align: center;
     font-family: var(--font-display);
-    font-size: 1.85rem;
+    font-size: 1.65rem;
     font-weight: 800;
-    line-height: 1.15;
+    line-height: 1.1;
     color: #4a2c1a;
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+  }
+
+  .lb-round-total {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #6b3d1f;
   }
 
   .lb-grid {

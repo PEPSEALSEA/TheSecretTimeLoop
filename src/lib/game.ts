@@ -45,9 +45,11 @@ function normalizeChoices(raw: unknown): Record<string, ChoiceId> {
 function normalizeGame(raw: unknown): GameState {
   if (!raw || typeof raw !== 'object') return { ...DEFAULT_GAME }
   const data = raw as Partial<GameState>
+  const maxIndex = Math.max(0, QUESTIONS.length - 1)
+  const rawIndex = typeof data.questionIndex === 'number' ? data.questionIndex : 0
   return {
     phase: data.phase ?? 'lobby',
-    questionIndex: typeof data.questionIndex === 'number' ? data.questionIndex : 0,
+    questionIndex: Math.min(maxIndex, Math.max(0, rawIndex)),
     endsAt: typeof data.endsAt === 'number' ? data.endsAt : null,
     scoredTeams:
       data.scoredTeams && typeof data.scoredTeams === 'object' ? data.scoredTeams : {},
@@ -139,4 +141,10 @@ export async function resetGame(): Promise<void> {
 
 export function questionProgressLabel(index: number): string {
   return `ข้อ ${index + 1}/${QUESTIONS.length}`
+}
+
+export function nextQuestionLabel(currentIndex: number): string {
+  const next = currentIndex + 1
+  if (next >= QUESTIONS.length) return `จบเกม (ครบ ${QUESTIONS.length} ข้อ)`
+  return `ข้อต่อไป (${next + 1}/${QUESTIONS.length})`
 }

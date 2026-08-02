@@ -14,7 +14,7 @@ import {
   subscribeGame,
   type GameState,
 } from '../lib/game'
-import { getQuestion } from '../lib/questions'
+import { getQuestion, TOTAL_QUESTIONS } from '../lib/questions'
 import type { TeamState } from '../lib/scoring'
 import { TEAM_IDS, formatMultiplier } from '../lib/scoring'
 import { playLeaderboardChangeSound, playScoreboardUpdateSound, unlockAudio } from '../lib/sounds'
@@ -44,9 +44,9 @@ function rankKey(teams: Record<string, TeamState>): string {
     .join('|')
 }
 
-function RoundBadge({ round }: { round: number }) {
+function RoundBadge({ questionNumber }: { questionNumber: number }) {
   return (
-    <div className="lb-round" aria-label={`รอบที่ ${round}`}>
+    <div className="lb-round" aria-label={`ข้อ ${questionNumber}/${TOTAL_QUESTIONS}`}>
       <img
         src={leaderboardAsset('round-scroll.png')}
         alt=""
@@ -54,7 +54,11 @@ function RoundBadge({ round }: { round: number }) {
         draggable={false}
         decoding="sync"
       />
-      <span className="lb-round-text">รอบที่ {round}</span>
+      <span className="lb-round-text">
+        ข้อ {questionNumber}
+        <br />
+        <span className="lb-round-total">/{TOTAL_QUESTIONS}</span>
+      </span>
     </div>
   )
 }
@@ -273,7 +277,7 @@ export function DisplayAll() {
                 <ScrollPanel variant="content" className="dsp-scroll-question">
                   <p className="dsp-heading">โจทย์</p>
                   <p className="dsp-round">
-                    ข้อ {roundNumber}
+                    ข้อ {roundNumber}/{TOTAL_QUESTIONS}
                     <span className="dsp-mul"> · ×{formatMultiplier(question.multiplier)}</span>
                   </p>
                   <p className={fitPromptClass(question.prompt)}>{question.prompt}</p>
@@ -318,7 +322,7 @@ export function DisplayAll() {
                   }
                 >
                   <p className="dsp-heading">เฉลย</p>
-                  <p className="dsp-round">ข้อ {roundNumber}</p>
+                  <p className="dsp-round">ข้อ {roundNumber}/{TOTAL_QUESTIONS}</p>
                   <p className="dsp-answer">{question.answerLabel}</p>
                   {hasAnswerImage && question.answerImage && (
                     <img
@@ -347,7 +351,7 @@ export function DisplayAll() {
             <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
               <div className="lb-inner">
                 <header className="lb-header">
-                  <RoundBadge round={roundNumber} />
+                  <RoundBadge questionNumber={roundNumber} />
                   <img
                     src={leaderboardAsset('title-scroll.png')}
                     alt="LEADERBOARD"
@@ -355,7 +359,7 @@ export function DisplayAll() {
                     draggable={false}
                     decoding="sync"
                   />
-                  <RoundBadge round={roundNumber} />
+                  <RoundBadge questionNumber={roundNumber} />
                 </header>
 
                 <TeamGrid teams={teams} scoredTeams={game?.scoredTeams ?? {}} />
