@@ -117,6 +117,13 @@ function fitPromptClass(text: string): string {
   return 'dsp-prompt'
 }
 
+function fitChoicesClass(choices: { text: string }[]): string {
+  const maxLen = Math.max(0, ...choices.map((c) => c.text.length))
+  if (maxLen > 80) return 'dsp-choices dsp-choices-dense'
+  if (maxLen > 40) return 'dsp-choices dsp-choices-md'
+  return 'dsp-choices'
+}
+
 export function DisplayAll() {
   const [game, setGame] = useState<GameState | null>(null)
   const [teams, setTeams] = useState<Record<string, TeamState>>({})
@@ -262,7 +269,7 @@ export function DisplayAll() {
 
           {phase === 'question' && question && (
             <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
-              <div className="dsp-center">
+              <div className="dsp-center dsp-center-tight">
                 <ScrollPanel variant="content" className="dsp-scroll-question">
                   <p className="dsp-heading">โจทย์</p>
                   <p className="dsp-round">
@@ -270,6 +277,14 @@ export function DisplayAll() {
                     <span className="dsp-mul"> · ×{formatMultiplier(question.multiplier)}</span>
                   </p>
                   <p className={fitPromptClass(question.prompt)}>{question.prompt}</p>
+                  <div className={fitChoicesClass(question.choices)}>
+                    {question.choices.map((choice) => (
+                      <div key={choice.id} className="dsp-choice">
+                        <span className="dsp-choice-id">{choice.id}</span>
+                        <span className="dsp-choice-text">{choice.text}</span>
+                      </div>
+                    ))}
+                  </div>
                 </ScrollPanel>
               </div>
             </motion.div>
