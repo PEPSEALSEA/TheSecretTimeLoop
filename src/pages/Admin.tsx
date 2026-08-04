@@ -18,7 +18,7 @@ import {
   type GameState,
 } from '../lib/game'
 import { QUESTIONS, ROUND_LABEL, TOTAL_QUESTIONS, getQuestion } from '../lib/questions'
-import { TEAM_IDS, formatMultiplier, formatScore } from '../lib/scoring'
+import { TEAM_IDS, formatMultiplier } from '../lib/scoring'
 
 const phaseLabel: Record<string, string> = {
   lobby: 'รอเริ่ม',
@@ -42,7 +42,6 @@ export function Admin() {
   const doneCount = game ? scoredCount(game) : 0
   const answeredTeamsCount = game ? answeredCount(game) : 0
   const betTeamsCount = game ? betCount(game) : 0
-  const canReveal = phase === 'betting' || phase === 'question' || phase === 'waiting'
 
   async function run(action: () => Promise<void>) {
     setBusy(true)
@@ -92,7 +91,17 @@ export function Admin() {
               </p>
             )}
           </div>
-          {(phase === 'betting' || phase === 'question' || phase === 'waiting') && (
+          {phase === 'betting' && (
+            <div className="rounded-xl bg-[rgba(255,255,255,0.4)] px-4 py-2 text-center">
+              <p className="text-[0.65rem] font-bold uppercase tracking-[0.24em] text-[var(--color-ink-muted)]">
+                เดิมพันแล้ว
+              </p>
+              <p className="font-score text-2xl text-[var(--color-ocean-deep)]">
+                {betTeamsCount}/{TEAM_IDS.length}
+              </p>
+            </div>
+          )}
+          {(phase === 'question' || phase === 'waiting') && (
             <>
               <div className="rounded-xl bg-[rgba(255,255,255,0.4)] px-4 py-2 text-center">
                 <p className="text-[0.65rem] font-bold uppercase tracking-[0.24em] text-[var(--color-ink-muted)]">
@@ -141,33 +150,65 @@ export function Admin() {
                   เฉลย: {question.answerLabel}
                 </p>
               )}
-              {(phase === 'betting' || phase === 'question' || phase === 'waiting') &&
-                game && (
-                  <div className="mt-3 grid grid-cols-4 gap-1.5 sm:grid-cols-8">
+              {phase === 'betting' && game && (
+                <div className="mt-3">
+                  <p className="mb-2 text-xs font-semibold text-[var(--color-ink-muted)]">
+                    กลุ่มที่ลงเดิมพันแล้ว (ไม่แสดงยอด)
+                  </p>
+                  <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-8">
                     {TEAM_IDS.map((id) => {
-                      const choice = game.teamChoices[id]
-                      const bet = game.teamBets[id]
+                      const placed = game.teamBets[id] != null
                       return (
                         <div
                           key={id}
-                          className={`rounded-lg py-1.5 text-center text-xs font-bold ${
-                            bet != null || choice
+                          className={`rounded-lg py-2 text-center text-sm font-bold ${
+                            placed
                               ? 'bg-[rgba(45,138,94,0.18)] text-[var(--color-success)]'
                               : 'bg-[rgba(42,24,16,0.06)] text-[var(--color-ink-muted)]'
                           }`}
-                          title={[
-                            bet != null ? `เดิมพัน ${formatScore(bet)}` : 'ยังไม่เดิมพัน',
-                            choice ? `เลือก ${choice}` : 'ยังไม่ตอบ',
-                          ].join(' · ')}
                         >
                           {id}
-                          {bet != null ? `·${bet}` : ''}
-                          {choice ? `·${choice}` : ''}
                         </div>
                       )
                     })}
                   </div>
-                )}
+                </div>
+              )}
+              {(phase === 'question' || phase === 'waiting') && game && (
+                <div className="mt-3">
+                  <p className="mb-2 text-xs font-semibold text-[var(--color-ink-muted)]">
+                    คำตอบที่เลือก
+                  </p>
+                  <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-8">
+                    {TEAM_IDS.map((id) => {
+                      const choice = game.teamChoices[id]
+                      const placed = game.teamBets[id] != null
+                      return (
+                        <div
+                          key={id}
+                          className={`rounded-lg py-1.5 text-center text-xs font-bold ${
+                            choice
+                              ? 'bg-[rgba(45,138,94,0.18)] text-[var(--color-success)]'
+                              : placed
+                                ? 'bg-[rgba(240,192,64,0.22)] text-[var(--color-ocean-deep)]'
+                                : 'bg-[rgba(42,24,16,0.06)] text-[var(--color-ink-muted)]'
+                          }`}
+                          title={
+                            choice
+                              ? `เลือก ${choice}`
+                              : placed
+                                ? 'เดิมพันแล้ว · ยังไม่ตอบ'
+                                : 'ยังไม่เดิมพัน'
+                          }
+                        >
+                          {id}
+                          {choice ? `·${choice}` : placed ? '·✓' : ''}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -214,7 +255,7 @@ export function Admin() {
             </button>
           )}
 
-          {canReveal && (
+          {(phase === 'question' || phase === 'waiting') && (
             <button
               type="button"
               disabled={busy}

@@ -15,7 +15,7 @@ import {
 } from '../lib/game'
 import { getQuestion, TOTAL_QUESTIONS } from '../lib/questions'
 import type { TeamState } from '../lib/scoring'
-import { TEAM_IDS, formatMultiplier, formatScore } from '../lib/scoring'
+import { TEAM_IDS, formatMultiplier } from '../lib/scoring'
 import { playLeaderboardChangeSound, playScoreboardUpdateSound, unlockAudio } from '../lib/sounds'
 import { STAGE_H, STAGE_W, useStageScale } from '../lib/stage'
 import { subscribeAllTeams } from '../lib/teams'
@@ -126,28 +126,18 @@ function fitChoicesClass(choices: { text: string }[]): string {
   return 'dsp-choices'
 }
 
-function TeamBetGrid({
-  teamBets,
-  teams,
-}: {
-  teamBets: Record<string, number>
-  teams: Record<string, TeamState>
-}) {
+function TeamBetGrid({ teamBets }: { teamBets: Record<string, number> }) {
   return (
     <div className="dsp-bet-grid">
       {TEAM_IDS.map((id) => {
-        const bet = teamBets[id]
-        const name = teams[id]?.name ?? `ทีม ${id}`
-        const placed = bet != null
+        const placed = teamBets[id] != null
         return (
           <div
             key={id}
             className={`dsp-bet-card ${placed ? 'dsp-bet-card-on' : 'dsp-bet-card-off'}`}
           >
-            <span className="dsp-bet-team">{name}</span>
-            <span className="dsp-bet-value">
-              {placed ? formatScore(bet) : '—'}
-            </span>
+            <span className="dsp-bet-num">{id}</span>
+            <span className="dsp-bet-label">{placed ? 'ลงแล้ว' : 'รอเดิมพัน'}</span>
           </div>
         )
       })}
@@ -322,7 +312,7 @@ export function DisplayAll() {
                   <p className="dsp-bet-status">
                     ลงเดิมพันแล้ว {placedBets}/{TEAM_IDS.length} ทีม
                   </p>
-                  <TeamBetGrid teamBets={game?.teamBets ?? {}} teams={teams} />
+                  <TeamBetGrid teamBets={game?.teamBets ?? {}} />
                 </ScrollPanel>
               </div>
             </motion.div>

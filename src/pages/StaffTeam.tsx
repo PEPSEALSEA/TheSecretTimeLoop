@@ -67,8 +67,10 @@ export function StaffTeam() {
   }, [teamId, valid])
 
   const phase = game ? effectivePhase(game) : 'lobby'
-  const canPlay =
+  const canBet =
     phase === 'betting' || phase === 'question' || phase === 'waiting'
+  const canChoose = phase === 'question' || phase === 'waiting'
+  const canPlay = canBet
   const canScore = phase === 'scores'
   const alreadyScored = Boolean(game?.scoredTeams[teamId])
   const selectedChoice = game?.teamChoices[teamId] ?? null
@@ -98,7 +100,7 @@ export function StaffTeam() {
   }
 
   async function onPickChoice(choice: ChoiceId) {
-    if (!canPlay) return
+    if (!canChoose) return
     unlockAudio()
     setBusy(true)
     setError(null)
@@ -112,7 +114,7 @@ export function StaffTeam() {
   }
 
   async function onPickBet(amount: number) {
-    if (!canPlay) return
+    if (!canBet) return
     if (team && amount > team.score) {
       setError('เดิมพันมากกว่าคะแนนปัจจุบัน')
       return
@@ -202,17 +204,21 @@ export function StaffTeam() {
     ? alreadyScored
       ? 'บันทึกแล้ว · รอข้อต่อไป'
       : 'ยืนยันคิดคะแนนจากเดิมพันรอบนี้'
-    : canPlay
-      ? selectedChoice && selectedBet != null
-        ? `เลือก ${selectedChoice} · เดิมพัน ${formatScore(selectedBet)}`
-        : selectedChoice
-          ? `เลือก ${selectedChoice} แล้ว · เลือกเดิมพัน`
-          : selectedBet != null
-            ? `เดิมพัน ${formatScore(selectedBet)} · เลือกคำตอบ`
-            : 'เลือกคำตอบ + วางเดิมพัน'
-      : phase === 'reveal'
-        ? 'ดูเฉลย · รอเปิดกระดาน'
-        : 'รอเริ่ม'
+    : phase === 'betting'
+      ? selectedBet != null
+        ? `เดิมพัน ${formatScore(selectedBet)} · รอเปิดตัวเลือก`
+        : 'วางเดิมพัน (ยังไม่มีตัวเลือก)'
+      : canChoose
+        ? selectedChoice && selectedBet != null
+          ? `เลือก ${selectedChoice} · เดิมพัน ${formatScore(selectedBet)}`
+          : selectedChoice
+            ? `เลือก ${selectedChoice} แล้ว · เลือกเดิมพัน`
+            : selectedBet != null
+              ? `เดิมพัน ${formatScore(selectedBet)} · เลือกคำตอบ`
+              : 'เลือกคำตอบ + วางเดิมพัน'
+        : phase === 'reveal'
+          ? 'ดูเฉลย · รอเปิดกระดาน'
+          : 'รอเริ่ม'
 
   return (
     <main className="pirate-scene sea-grain mx-auto min-h-dvh max-w-md px-3 py-4 text-[0.95rem]">
@@ -343,52 +349,60 @@ export function StaffTeam() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <p className="text-xs font-semibold text-[var(--color-ink-muted)]">ตัวเลือก</p>
-            {question.choices.map((choice) => {
-              const active = selectedChoice === choice.id
-              return (
-                <button
-                  key={choice.id}
-                  type="button"
-                  disabled={busy}
-                  onClick={() => void onPickChoice(choice.id)}
-                  className={`w-full rounded-xl border-2 px-3 py-2.5 text-left transition ${
-                    active
-                      ? 'border-[var(--color-gold)] bg-[rgba(240,192,64,0.28)]'
-                      : 'border-[rgba(42,24,16,0.12)] bg-[rgba(255,255,255,0.28)] hover:border-[rgba(26,90,138,0.35)]'
-                  }`}
-                >
-                  <span className="font-display text-lg text-[var(--color-ocean-deep)]">
-                    {choice.id}.
-                  </span>{' '}
-                  <span className="text-sm leading-snug text-[var(--color-ink)]">
-                    {choice.text}
+          {canChoose ? (
+            <>
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-[var(--color-ink-muted)]">ตัวเลือก</p>
+                {question.choices.map((choice) => {
+                  const active = selectedChoice === choice.id
+                  return (
+                    <button
+                      key={choice.id}
+                      type="button"
+                      disabled={busy}
+                      onClick={() => void onPickChoice(choice.id)}
+                      className={`w-full rounded-xl border-2 px-3 py-2.5 text-left transition ${
+                        active
+                          ? 'border-[var(--color-gold)] bg-[rgba(240,192,64,0.28)]'
+                          : 'border-[rgba(42,24,16,0.12)] bg-[rgba(255,255,255,0.28)] hover:border-[rgba(26,90,138,0.35)]'
+                      }`}
+                    >
+                      <span className="font-display text-lg text-[var(--color-ocean-deep)]">
+                        {choice.id}.
+                      </span>{' '}
+                      <span className="text-sm leading-snug text-[var(--color-ink)]">
+                        {choice.text}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+
+              {preview && (
+                <div className="rounded-lg bg-[rgba(255,255,255,0.35)] px-3 py-2 text-center text-xs text-[var(--color-ink-muted)]">
+                  พรีวิวถ้า{isCorrect ? 'ถูก' : 'ผิด'}:{' '}
+                  <span
+                    className={
+                      preview.delta >= 0
+                        ? 'font-semibold text-[var(--color-success)]'
+                        : 'font-semibold text-[var(--color-danger)]'
+                    }
+                  >
+                    {formatDelta(preview.delta)}
                   </span>
-                </button>
-              )
-            })}
-          </div>
+                </div>
+              )}
 
-          {preview && (
-            <div className="rounded-lg bg-[rgba(255,255,255,0.35)] px-3 py-2 text-center text-xs text-[var(--color-ink-muted)]">
-              พรีวิวถ้า{isCorrect ? 'ถูก' : 'ผิด'}:{' '}
-              <span
-                className={
-                  preview.delta >= 0
-                    ? 'font-semibold text-[var(--color-success)]'
-                    : 'font-semibold text-[var(--color-danger)]'
-                }
-              >
-                {formatDelta(preview.delta)}
-              </span>
-            </div>
+              <p className="text-center text-xs text-[var(--color-ink-muted)]">
+                เดิมพัน {betTeamsCount}/{TEAM_IDS.length} · ตอบ {answeredTeamsCount}/
+                {TEAM_IDS.length} · แก้ได้จนกว่า host กดแสดงเฉลย
+              </p>
+            </>
+          ) : (
+            <p className="text-center text-xs text-[var(--color-ink-muted)]">
+              เดิมพันแล้ว {betTeamsCount}/{TEAM_IDS.length} ทีม · รอ host เปิดตัวเลือก
+            </p>
           )}
-
-          <p className="text-center text-xs text-[var(--color-ink-muted)]">
-            เดิมพัน {betTeamsCount}/{TEAM_IDS.length} · ตอบ {answeredTeamsCount}/
-            {TEAM_IDS.length} · แก้ได้จนกว่า host กดแสดงเฉลย
-          </p>
         </section>
       )}
 
@@ -536,7 +550,7 @@ export function StaffTeam() {
           <section className="parchment panel rounded-xl p-5 text-center">
             <p className="font-display text-xl text-[var(--color-ocean-deep)]">เปิดค้างไว้ได้เลย</p>
             <p className="mt-1.5 text-sm text-[var(--color-ink-muted)]">
-              พอ host เปิดรอบเดิมพัน จะมี choice + เดิมพันให้กดตรงนี้
+              พอ host เปิดรอบเดิมพัน จะมีปุ่มเดิมพันให้กดตรงนี้
             </p>
           </section>
         )
