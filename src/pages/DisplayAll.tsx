@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { GameTimer } from '../components/GameTimer'
 import { TeamGrid } from '../components/TeamGrid'
 import {
   leaderboardAsset,
@@ -8,6 +9,7 @@ import {
   questionImageAsset,
 } from '../lib/assets'
 import {
+  answeredCount as countAnsweredTeams,
   betCount as countBetTeams,
   effectivePhase,
   subscribeGame,
@@ -19,6 +21,7 @@ import { TEAM_IDS, formatMultiplier } from '../lib/scoring'
 import { playLeaderboardChangeSound, playScoreboardUpdateSound, unlockAudio } from '../lib/sounds'
 import { STAGE_H, STAGE_W, useStageScale } from '../lib/stage'
 import { subscribeAllTeams } from '../lib/teams'
+import { remainingMs, useNow } from '../lib/timer'
 
 const panelTransition = {
   duration: 0.42,
@@ -172,9 +175,14 @@ export function DisplayAll() {
 
   const phase = game ? effectivePhase(game) : 'lobby'
   const question = game ? getQuestion(game.questionIndex) : null
+  const timerActive = phase === 'question' && game?.endsAt != null
+  const now = useNow(timerActive || phase === 'waiting')
+  const left = remainingMs(game?.endsAt ?? null, now)
+  const totalMs = (question?.durationSec ?? 0) * 1000
   const isBoard = phase === 'scores' || phase === 'finished'
   const roundNumber = (game?.questionIndex ?? 0) + 1
   const placedBets = game ? countBetTeams(game) : 0
+  const answeredCount = game ? countAnsweredTeams(game) : 0
 
   useEffect(() => {
     const prevHtml = document.documentElement.style.overflow
@@ -268,6 +276,10 @@ export function DisplayAll() {
 
   return (
     <main className="lb-viewport" onPointerDown={unlockAudio}>
+      {timerActive && left > 0 && (
+        <GameTimer remainingMs={left} totalMs={totalMs} />
+      )}
+
       <StageShell stageScale={stageScale}>
         <AnimatePresence mode="sync" initial={false}>
           {phase === 'lobby' && (
@@ -318,7 +330,7 @@ export function DisplayAll() {
             </motion.div>
           )}
 
-          {(phase === 'question' || phase === 'waiting') && question && (
+          {phase === 'question' && question && (
             <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
               <div className="dsp-center dsp-center-tight">
                 <ScrollPanel
@@ -355,6 +367,19 @@ export function DisplayAll() {
                       </div>
                     ))}
                   </div>
+                </ScrollPanel>
+              </div>
+            </motion.div>
+          )}
+
+          {phase === 'waiting' && (
+            <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
+              <div className="dsp-center">
+                <ScrollPanel variant="status" className="dsp-scroll-status-lg">
+                  <h1 className="dsp-title dsp-title-hero">หมดเวลา</h1>
+                  <p className="dsp-answered-count">
+                    ตอบแล้ว {answeredCount}/{TEAM_IDS.length} ทีม
+                  </p>
                 </ScrollPanel>
               </div>
             </motion.div>

@@ -130,7 +130,10 @@ export function scoredCount(game: GameState): number {
   return TEAM_IDS.filter((id) => game.scoredTeams[id]).length
 }
 
-export function effectivePhase(game: GameState): GamePhase {
+export function effectivePhase(game: GameState, now = Date.now()): GamePhase {
+  if (game.phase === 'question' && game.endsAt != null && now >= game.endsAt) {
+    return 'waiting'
+  }
   return game.phase
 }
 
@@ -154,12 +157,17 @@ export async function startGame(): Promise<void> {
   await set(gameRef(), freshRound('betting', 0))
 }
 
-export async function openQuestion(): Promise<void> {
-  await update(gameRef(), { phase: 'question', endsAt: null })
+export async function openQuestion(questionIndex: number): Promise<void> {
+  const q = getQuestion(questionIndex)
+  if (!q) return
+  await update(gameRef(), {
+    phase: 'question',
+    endsAt: Date.now() + q.durationSec * 1000,
+  })
 }
 
 export async function lockQuestion(): Promise<void> {
-  await update(gameRef(), { phase: 'waiting', endsAt: null })
+  await update(gameRef(), { phase: 'waiting', endsAt: Date.now() })
 }
 
 export async function showReveal(): Promise<void> {

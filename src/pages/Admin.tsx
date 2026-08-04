@@ -5,6 +5,7 @@ import {
   answeredCount,
   betCount,
   effectivePhase,
+  lockQuestion,
   nextQuestion,
   nextQuestionLabel,
   openQuestion,
@@ -19,12 +20,13 @@ import {
 } from '../lib/game'
 import { QUESTIONS, ROUND_LABEL, TOTAL_QUESTIONS, getQuestion } from '../lib/questions'
 import { TEAM_IDS, formatMultiplier } from '../lib/scoring'
+import { remainingMs, useNow } from '../lib/timer'
 
 const phaseLabel: Record<string, string> = {
   lobby: 'รอเริ่ม',
   betting: 'วางเดิมพัน · โจทย์อย่างเดียว',
-  question: 'แสดงตัวเลือก',
-  waiting: 'รอเปิดเฉลย',
+  question: 'กำลังจับเวลา',
+  waiting: 'หมดเวลา · รอเปิดเฉลย',
   reveal: 'แสดงเฉลย',
   scores: 'รอ staff แก้คะแนน',
   finished: 'จบเกม',
@@ -39,6 +41,9 @@ export function Admin() {
 
   const phase = game ? effectivePhase(game) : 'lobby'
   const question = game ? getQuestion(game.questionIndex) : null
+  const timerActive = phase === 'question' && game?.endsAt != null
+  const now = useNow(timerActive || phase === 'waiting')
+  const left = remainingMs(game?.endsAt ?? null, now)
   const doneCount = game ? scoredCount(game) : 0
   const answeredTeamsCount = game ? answeredCount(game) : 0
   const betTeamsCount = game ? betCount(game) : 0
@@ -87,7 +92,13 @@ export function Admin() {
             {game && phase !== 'lobby' && (
               <p className="mt-1 text-sm text-[var(--color-ink-muted)]">
                 {questionProgressLabel(game.questionIndex)}
-                {question ? ` · ×${formatMultiplier(question.multiplier)}` : ''}
+                {question
+                  ? ` · ×${formatMultiplier(question.multiplier)}${
+                      phase === 'betting' || phase === 'question' || phase === 'waiting'
+                        ? ` · ${question.durationSec}s`
+                        : ''
+                    }`
+                  : ''}
               </p>
             )}
           </div>
@@ -98,6 +109,16 @@ export function Admin() {
               </p>
               <p className="font-score text-2xl text-[var(--color-ocean-deep)]">
                 {betTeamsCount}/{TEAM_IDS.length}
+              </p>
+            </div>
+          )}
+          {phase === 'question' && (
+            <div className="rounded-xl bg-[rgba(255,255,255,0.4)] px-4 py-2 text-center">
+              <p className="text-[0.65rem] font-bold uppercase tracking-[0.24em] text-[var(--color-ink-muted)]">
+                เหลือ
+              </p>
+              <p className="font-score text-2xl text-[var(--color-ocean-deep)]">
+                {Math.ceil(left / 1000)}s
               </p>
             </div>
           )}
@@ -140,7 +161,7 @@ export function Admin() {
             phase === 'reveal') && (
             <div className="mt-4 rounded-xl border border-dashed border-[rgba(42,24,16,0.14)] px-4 py-3">
               <p className="text-sm text-[var(--color-ink-muted)]">
-                โจทย์ · ×{formatMultiplier(question.multiplier)}
+                โจทย์ · ×{formatMultiplier(question.multiplier)} · {question.durationSec}s
               </p>
               <p className="mt-1 font-display text-lg text-[var(--color-ocean-deep)]">
                 {question.prompt}
@@ -244,18 +265,29 @@ export function Admin() {
             </button>
           )}
 
-          {phase === 'betting' && (
+          {phase === 'betting' && game && (
             <button
               type="button"
               disabled={busy}
-              onClick={() => run(openQuestion)}
+              onClick={() => run(() => openQuestion(game.questionIndex))}
               className="btn-gold rounded-xl px-5 py-3 font-semibold"
             >
-              เปิดตัวเลือก
+              เปิดตัวเลือก · จับเวลา {question?.durationSec ?? 0}s
             </button>
           )}
 
-          {(phase === 'question' || phase === 'waiting') && (
+          {phase === 'question' && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => run(lockQuestion)}
+              className="btn-sea rounded-xl px-5 py-3 font-semibold"
+            >
+              หมดเวลาทันที
+            </button>
+          )}
+
+          {phase === 'waiting' && (
             <button
               type="button"
               disabled={busy}
