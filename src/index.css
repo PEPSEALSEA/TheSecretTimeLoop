@@ -435,7 +435,7 @@
   }
 
   .dsp-center-tight {
-    padding: 20px 36px 28px;
+    padding: 0;
   }
 
   .dsp-scroll {
@@ -469,32 +469,32 @@
   }
 
   .dsp-scroll-question {
-    width: 1780px;
-    height: 980px;
+    width: 1920px;
+    height: 1080px;
   }
 
   .dsp-scroll-question .dsp-scroll-body {
     box-sizing: border-box;
     justify-content: center;
     gap: 10px;
-    padding: 56px 150px 64px;
+    padding: 88px 340px 96px;
   }
 
   .dsp-scroll-betting {
-    width: 1780px;
-    height: 980px;
+    width: 1920px;
+    height: 1080px;
   }
 
   .dsp-scroll-betting .dsp-scroll-body {
     box-sizing: border-box;
     justify-content: center;
     gap: 12px;
-    padding: 56px 140px 64px;
+    padding: 88px 340px 96px;
   }
 
   .dsp-scroll-betting-img .dsp-scroll-body {
     gap: 8px;
-    padding: 120px 120px 72px;
+    padding: 140px 340px 100px;
     justify-content: flex-start;
   }
 
@@ -547,7 +547,7 @@
     grid-template-columns: repeat(8, minmax(0, 1fr));
     gap: 14px 16px;
     width: 100%;
-    max-width: 1400px;
+    max-width: 1180px;
     margin-top: 18px;
     flex: 0 0 auto;
   }
@@ -600,12 +600,12 @@
   }
 
   .dsp-scroll-reveal {
-    width: 1680px;
-    height: 820px;
+    width: 1920px;
+    height: 1080px;
   }
 
   .dsp-scroll-reveal .dsp-scroll-body {
-    padding: 72px 170px 80px;
+    padding: 100px 340px 110px;
   }
 
   .dsp-scroll-status-lg {
@@ -693,7 +693,7 @@
 
   .dsp-scroll-question-img .dsp-scroll-body {
     gap: 8px;
-    padding: 110px 130px 72px;
+    padding: 130px 340px 100px;
     justify-content: flex-start;
   }
 
@@ -730,6 +730,7 @@
     grid-template-columns: 1fr 1fr;
     gap: 18px 28px;
     width: 100%;
+    max-width: 1180px;
     margin-top: 22px;
     flex: 0 0 auto;
     align-content: start;
@@ -880,13 +881,13 @@
   }
 
   .dsp-scroll-reveal-img {
-    width: 1760px;
-    height: 940px;
+    width: 1920px;
+    height: 1080px;
   }
 
   .dsp-scroll-reveal-img .dsp-scroll-body {
     gap: 8px;
-    padding: 120px 160px 80px;
+    padding: 140px 340px 110px;
     justify-content: flex-start;
   }
 
