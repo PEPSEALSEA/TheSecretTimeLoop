@@ -18,7 +18,7 @@ import {
   subscribeGame,
   type GameState,
 } from '../lib/game'
-import { QUESTIONS, ROUND_LABEL, TOTAL_QUESTIONS, getQuestion } from '../lib/questions'
+import { ROUND_LABEL, TOTAL_QUESTIONS, getQuestion } from '../lib/questions'
 import { TEAM_IDS, formatMultiplier } from '../lib/scoring'
 import { remainingMs, useNow } from '../lib/timer'
 
@@ -28,7 +28,7 @@ const phaseLabel: Record<string, string> = {
   question: 'กำลังจับเวลา',
   waiting: 'หมดเวลา · รอเปิดเฉลย',
   reveal: 'แสดงเฉลย',
-  scores: 'รอ staff แก้คะแนน',
+  scores: 'คะแนนอัปเดตแล้ว',
   finished: 'จบเกม',
 }
 
@@ -145,7 +145,7 @@ export function Admin() {
           {phase === 'scores' && (
             <div className="rounded-xl bg-[rgba(255,255,255,0.4)] px-4 py-2 text-center">
               <p className="text-[0.65rem] font-bold uppercase tracking-[0.24em] text-[var(--color-ink-muted)]">
-                staff แก้แล้ว
+                คิดคะแนนแล้ว
               </p>
               <p className="font-score text-2xl text-[var(--color-ocean-deep)]">
                 {doneCount}/{TEAM_IDS.length}
@@ -294,7 +294,7 @@ export function Admin() {
               onClick={() => run(showReveal)}
               className="btn-gold rounded-xl px-5 py-3 font-semibold"
             >
-              แสดงเฉลย
+              แสดงเฉลย · คิดคะแนนอัตโนมัติ
             </button>
           )}
 
@@ -317,9 +317,6 @@ export function Admin() {
               className="btn-gold rounded-xl px-5 py-3 font-semibold"
             >
               {nextQuestionLabel(game.questionIndex)}
-              {game.questionIndex + 1 < QUESTIONS.length
-                ? ` · staff ${doneCount}/${TEAM_IDS.length}`
-                : ''}
             </button>
           )}
 

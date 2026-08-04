@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useState } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
 import { AnimatedScore } from '../components/AnimatedScore'
 import {
@@ -14,27 +14,20 @@ import {
   subscribeGame,
   type GameState,
 } from '../lib/game'
-import {
-  getQuestion,
-  isCorrectChoice,
-  type ChoiceId,
-} from '../lib/questions'
+import { getQuestion, type ChoiceId } from '../lib/questions'
 import {
   BET_OPTIONS,
   DEFAULT_STARTING_SCORE,
   TEAM_IDS,
-  applyRound,
-  formatDelta,
   formatMultiplier,
   formatScore,
   type TeamState,
 } from '../lib/scoring'
-import { playRoundSound, unlockAudio } from '../lib/sounds'
+import { unlockAudio } from '../lib/sounds'
 import {
   ensureTeam,
   resetTeam,
   setTeamScore,
-  submitRound,
   subscribeTeam,
 } from '../lib/teams'
 
@@ -66,6 +59,11 @@ export function StaffTeam() {
     }
   }, [teamId, valid])
 
+  useEffect(() => {
+    if (!team) return
+    setManualScore(String(Math.round(team.score)))
+  }, [team])
+
   const phase = game ? effectivePhase(game) : 'lobby'
   const canBet =
     phase === 'betting' || phase === 'question' || phase === 'waiting'
@@ -79,15 +77,6 @@ export function StaffTeam() {
   const answeredTeamsCount = game ? answeredCount(game) : 0
   const betTeamsCount = game ? betCount(game) : 0
   const question = game ? getQuestion(game.questionIndex) : null
-  const multiplier = question?.multiplier ?? 1
-  const isCorrect = question ? isCorrectChoice(question, selectedChoice) : false
-  const result = isCorrect ? 'correct' : 'wrong'
-  const betNum = selectedBet ?? 0
-
-  const preview = useMemo(() => {
-    if (!team || betNum <= 0) return null
-    return applyRound(team.score, betNum, multiplier, result)
-  }, [team, betNum, multiplier, result])
 
   if (!valid) return <Navigate to="/" replace />
 
@@ -124,37 +113,6 @@ export function StaffTeam() {
     setError(null)
     try {
       await markTeamBet(teamId, amount)
-    } catch (err) {
-      setError(String(err))
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  async function onSubmitRound(e: FormEvent) {
-    e.preventDefault()
-    if (!canScore || !question) return
-    unlockAudio()
-    if (!selectedBet || selectedBet <= 0) {
-      setError('ยังไม่มีเดิมพันของรอบนี้')
-      return
-    }
-    if (team && selectedBet > team.score) {
-      setError('เดิมพันมากกว่าคะแนนปัจจุบัน')
-      return
-    }
-    setBusy(true)
-    setError(null)
-    try {
-      await submitRound(
-        teamId,
-        selectedBet,
-        multiplier,
-        result,
-        selectedChoice ?? undefined,
-      )
-      playRoundSound(result)
-      await afterSave()
     } catch (err) {
       setError(String(err))
     } finally {
@@ -201,9 +159,7 @@ export function StaffTeam() {
   }
 
   const statusText = canScore
-    ? alreadyScored
-      ? 'บันทึกแล้ว · รอข้อต่อไป'
-      : 'ยืนยันคิดคะแนนจากเดิมพันรอบนี้'
+    ? 'คะแนนอัปเดตแล้ว · รอข้อต่อไป'
     : phase === 'betting'
       ? selectedBet != null
         ? `เดิมพัน ${formatScore(selectedBet)} · รอเปิดตัวเลือก`
@@ -217,7 +173,7 @@ export function StaffTeam() {
               ? `เดิมพัน ${formatScore(selectedBet)} · เลือกคำตอบ`
               : 'เลือกคำตอบ + วางเดิมพัน'
         : phase === 'reveal'
-          ? 'ดูเฉลย · รอเปิดกระดาน'
+          ? 'คะแนนอัปเดตอัตโนมัติ · รอเปิดกระดาน'
           : 'รอเริ่ม'
 
   return (
@@ -255,34 +211,22 @@ export function StaffTeam() {
               </p>
             )}
           </div>
-          {alreadyScored && (
+          {(phase === 'reveal' || phase === 'scores') && alreadyScored && (
             <span className="rounded-full bg-[rgba(45,138,94,0.18)] px-2.5 py-1 text-xs font-bold text-[var(--color-success)]">
-              เสร็จแล้ว
+              อัปเดตแล้ว
             </span>
           )}
         </div>
-        {question && (phase === 'reveal' || phase === 'scores') && (
+        {(phase === 'reveal' || phase === 'scores') && (
           <div className="mt-2 rounded-lg bg-[rgba(255,255,255,0.35)] px-2.5 py-1.5 text-xs text-[var(--color-ink-muted)]">
             <p>
-              เฉลย:{' '}
-              <span className="font-semibold text-[var(--color-success)]">
-                {question.answerLabel}
-              </span>
+              {selectedBet != null
+                ? `เดิมพัน ${formatScore(selectedBet)}${
+                    selectedChoice ? ` · เลือก ${selectedChoice}` : ' · ไม่ได้เลือกคำตอบ'
+                  }`
+                : 'ทีมนี้ยังไม่ได้วางเดิมพัน'}
             </p>
-            {selectedChoice && (
-              <p className="mt-1">
-                ทีมเลือก {selectedChoice}{' '}
-                <span
-                  className={
-                    isCorrect
-                      ? 'font-semibold text-[var(--color-success)]'
-                      : 'font-semibold text-[var(--color-danger)]'
-                  }
-                >
-                  ({isCorrect ? 'ถูก' : 'ผิด'})
-                </span>
-              </p>
-            )}
+            <p className="mt-1">เฉลยดูที่จอใหญ่เท่านั้น · staff ไม่แสดงผลถูก/ผิด</p>
           </div>
         )}
       </motion.div>
@@ -378,21 +322,6 @@ export function StaffTeam() {
                 })}
               </div>
 
-              {preview && (
-                <div className="rounded-lg bg-[rgba(255,255,255,0.35)] px-3 py-2 text-center text-xs text-[var(--color-ink-muted)]">
-                  พรีวิวถ้า{isCorrect ? 'ถูก' : 'ผิด'}:{' '}
-                  <span
-                    className={
-                      preview.delta >= 0
-                        ? 'font-semibold text-[var(--color-success)]'
-                        : 'font-semibold text-[var(--color-danger)]'
-                    }
-                  >
-                    {formatDelta(preview.delta)}
-                  </span>
-                </div>
-              )}
-
               <p className="text-center text-xs text-[var(--color-ink-muted)]">
                 เดิมพัน {betTeamsCount}/{TEAM_IDS.length} · ตอบ {answeredTeamsCount}/
                 {TEAM_IDS.length} · แก้ได้จนกว่า host กดแสดงเฉลย
@@ -406,101 +335,27 @@ export function StaffTeam() {
         </section>
       )}
 
-      {phase === 'reveal' && question && (
+      {phase === 'reveal' && (
         <section className="parchment panel mb-3 rounded-xl p-4">
-          <p className="font-display text-lg text-[var(--color-ocean-deep)]">รอเปิดกระดานคะแนน</p>
+          <p className="font-display text-lg text-[var(--color-ocean-deep)]">
+            คะแนนอัปเดตแล้ว
+          </p>
           <p className="mt-1 text-sm text-[var(--color-ink-muted)]">
-            {selectedBet != null
-              ? `เดิมพัน ${formatScore(selectedBet)}${
-                  selectedChoice ? ` · เลือก ${selectedChoice}` : ' · ไม่ได้เลือกคำตอบ'
-                }`
-              : 'ทีมนี้ยังไม่ได้วางเดิมพัน'}
+            รอ host เปิดกระดานคะแนน · ดูเฉลยที่จอใหญ่เท่านั้น
           </p>
         </section>
       )}
 
       {canScore ? (
         <>
-          <motion.form
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            onSubmit={onSubmitRound}
-            className="parchment panel mb-3 space-y-3 rounded-xl p-4"
-          >
-            <h2 className="font-display text-base text-[var(--color-ocean-deep)]">
-              คิดคะแนนรอบนี้
-            </h2>
-
-            <div className="rounded-lg bg-[rgba(255,255,255,0.35)] px-3 py-2 text-sm">
-              <p className="text-[var(--color-ink-muted)]">
-                ตัวคูณข้อนี้: <strong>×{formatMultiplier(multiplier)}</strong>
-              </p>
-              <p className="mt-0.5 text-[var(--color-ink-muted)]">
-                เดิมพัน:{' '}
-                {selectedBet != null ? (
-                  <strong>{formatScore(selectedBet)}</strong>
-                ) : (
-                  <strong className="text-[var(--color-danger)]">ไม่มี</strong>
-                )}
-              </p>
-              <p className="mt-0.5 text-[var(--color-ink-muted)]">
-                คำตอบ:{' '}
-                {selectedChoice ? (
-                  <>
-                    {selectedChoice}{' '}
-                    <strong
-                      className={
-                        isCorrect
-                          ? 'text-[var(--color-success)]'
-                          : 'text-[var(--color-danger)]'
-                      }
-                    >
-                      ({isCorrect ? 'ถูก' : 'ผิด'})
-                    </strong>
-                  </>
-                ) : (
-                  <strong className="text-[var(--color-danger)]">ไม่ได้เลือก · ผิด</strong>
-                )}
-              </p>
-              <p className="mt-1 text-xs text-[var(--color-ink-muted)]">
-                {isCorrect
-                  ? 'สูตรถูก: คะแนน − เดิมพัน + (เดิมพัน × ตัวคูณ)'
-                  : 'สูตรผิด: คะแนน − เดิมพัน'}
-              </p>
-            </div>
-
-            {preview && (
-              <div className="rounded-lg bg-[rgba(255,255,255,0.35)] px-3 py-2.5 text-center">
-                <p className="text-xs text-[var(--color-ink-muted)]">พรีวิวรอบนี้</p>
-                <p
-                  className={`mt-0.5 font-display text-2xl ${
-                    preview.delta >= 0
-                      ? 'text-[var(--color-success)]'
-                      : 'text-[var(--color-danger)]'
-                  }`}
-                >
-                  {formatDelta(preview.delta)}
-                </p>
-                <p className="mt-0.5 text-xs text-[var(--color-ink-muted)]">
-                  คะแนนหลังรอบ ≈ {Math.round(preview.nextScore).toLocaleString('th-TH')}
-                </p>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={busy || !team || alreadyScored || selectedBet == null}
-              className="btn-gold w-full rounded-lg py-3 text-lg"
-            >
-              {alreadyScored
-                ? 'บันทึกแล้ว'
-                : busy
-                  ? 'กำลังบันทึก…'
-                  : selectedBet == null
-                    ? 'ไม่มีเดิมพัน'
-                    : 'ยืนยันคิดคะแนน'}
-            </button>
-          </motion.form>
+          <section className="parchment panel mb-3 rounded-xl p-4">
+            <p className="font-display text-lg text-[var(--color-ocean-deep)]">
+              คิดคะแนนอัตโนมัติแล้ว
+            </p>
+            <p className="mt-1 text-sm text-[var(--color-ink-muted)]">
+              ไม่ต้องกดยืนยัน · แก้คะแนนด้านล่างได้ถ้าจำเป็น
+            </p>
+          </section>
 
           <section className="parchment panel mb-3 space-y-2 rounded-xl p-4">
             <h2 className="font-display text-base text-[var(--color-ocean-deep)]">ตั้งคะแนนตรงๆ</h2>

@@ -6,6 +6,7 @@ import {
   type Unsubscribe,
 } from 'firebase/database'
 import { db } from './firebase'
+import { isCorrectChoice, type ChoiceId, type Question } from './questions'
 import {
   applyRound,
   createInitialTeam,
@@ -110,4 +111,26 @@ export async function submitRound(
   }
   await set(teamRef(teamId), next)
   return next
+}
+
+export async function applyAllTeamRoundScores(
+  teamBets: Record<string, number>,
+  teamChoices: Record<string, ChoiceId>,
+  question: Question,
+): Promise<void> {
+  await Promise.all(
+    TEAM_IDS.map(async (teamId) => {
+      const bet = teamBets[teamId]
+      if (bet == null || bet <= 0) return
+      const choice = teamChoices[teamId]
+      const result = isCorrectChoice(question, choice) ? 'correct' : 'wrong'
+      await submitRound(
+        teamId,
+        bet,
+        question.multiplier,
+        result,
+        choice ?? undefined,
+      )
+    }),
+  )
 }

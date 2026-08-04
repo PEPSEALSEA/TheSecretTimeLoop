@@ -1,7 +1,8 @@
-import { onValue, ref, set, update, type Unsubscribe } from 'firebase/database'
+import { get, onValue, ref, set, update, type Unsubscribe } from 'firebase/database'
 import { db } from './firebase'
 import { getQuestion, QUESTIONS, type ChoiceId } from './questions'
 import { BET_OPTIONS, TEAM_IDS } from './scoring'
+import { applyAllTeamRoundScores } from './teams'
 
 export type GamePhase =
   | 'lobby'
@@ -171,11 +172,21 @@ export async function lockQuestion(): Promise<void> {
 }
 
 export async function showReveal(): Promise<void> {
-  await update(gameRef(), { phase: 'reveal', endsAt: null })
+  const snap = await get(gameRef())
+  const game = snap.exists() ? normalizeGame(snap.val()) : { ...DEFAULT_GAME }
+  const question = getQuestion(game.questionIndex)
+  if (question) {
+    await applyAllTeamRoundScores(game.teamBets, game.teamChoices, question)
+  }
+  const scoredTeams: Record<string, boolean> = {}
+  for (const id of TEAM_IDS) scoredTeams[id] = true
+  await update(gameRef(), { phase: 'reveal', endsAt: null, scoredTeams })
 }
 
 export async function showScores(): Promise<void> {
-  await update(gameRef(), { phase: 'scores', scoredTeams: {} })
+  const scoredTeams: Record<string, boolean> = {}
+  for (const id of TEAM_IDS) scoredTeams[id] = true
+  await update(gameRef(), { phase: 'scores', scoredTeams })
 }
 
 export async function markTeamScored(teamId: string): Promise<void> {
