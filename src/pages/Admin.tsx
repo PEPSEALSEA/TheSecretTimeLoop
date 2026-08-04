@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   answeredCount,
@@ -20,7 +20,19 @@ import {
   type GameState,
 } from '../lib/game'
 import { ROUND_LABEL, TOTAL_QUESTIONS, getQuestion } from '../lib/questions'
-import { TEAM_IDS, formatMultiplier } from '../lib/scoring'
+import {
+  DEFAULT_STARTING_SCORE,
+  TEAM_IDS,
+  formatMultiplier,
+  formatScore,
+  type TeamState,
+} from '../lib/scoring'
+import {
+  ensureAllTeams,
+  resetTeam,
+  setTeamScore,
+  subscribeAllTeams,
+} from '../lib/teams'
 import { remainingMs, useNow } from '../lib/timer'
 
 const phaseLabel: Record<string, string> = {
@@ -35,10 +47,47 @@ const phaseLabel: Record<string, string> = {
 
 export function Admin() {
   const [game, setGame] = useState<GameState | null>(null)
+  const [teams, setTeams] = useState<Record<string, TeamState>>({})
+  const [scoreDrafts, setScoreDrafts] = useState<Record<string, string>>({})
+  const [resetDrafts, setResetDrafts] = useState<Record<string, string>>(() =>
+    Object.fromEntries(TEAM_IDS.map((id) => [id, String(DEFAULT_STARTING_SCORE)])),
+  )
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const lastScores = useRef<Record<string, number>>({})
 
   useEffect(() => subscribeGame(setGame), [])
+  useEffect(() => {
+    void ensureAllTeams().catch((e) => setError(String(e)))
+    return subscribeAllTeams(setTeams)
+  }, [])
+
+  useEffect(() => {
+    setScoreDrafts((prev) => {
+      const next = { ...prev }
+      for (const id of TEAM_IDS) {
+        const team = teams[id]
+        if (!team) continue
+        const rounded = Math.round(team.score)
+        if (lastScores.current[id] !== rounded) {
+          next[id] = String(rounded)
+          lastScores.current[id] = rounded
+        }
+      }
+      return next
+    })
+    setResetDrafts((prev) => {
+      const next = { ...prev }
+      for (const id of TEAM_IDS) {
+        const team = teams[id]
+        if (!team) continue
+        if (prev[id] == null || prev[id] === '') {
+          next[id] = String(team.startingScore)
+        }
+      }
+      return next
+    })
+  }, [teams])
 
   const phase = game ? effectivePhase(game) : 'lobby'
   const question = game ? getQuestion(game.questionIndex) : null
@@ -66,6 +115,24 @@ export function Admin() {
     } finally {
       setBusy(false)
     }
+  }
+
+  async function onSetScore(teamId: string) {
+    const score = Number(scoreDrafts[teamId])
+    if (!Number.isFinite(score) || score < 0) {
+      setError(`ทีม ${teamId}: คะแนนที่ตั้งไม่ถูกต้อง`)
+      return
+    }
+    await run(() => setTeamScore(teamId, score).then(() => undefined))
+  }
+
+  async function onResetTeam(teamId: string) {
+    const start = Number(resetDrafts[teamId] ?? DEFAULT_STARTING_SCORE)
+    if (!Number.isFinite(start) || start < 0) {
+      setError(`ทีม ${teamId}: คะแนนเริ่มต้นไม่ถูกต้อง`)
+      return
+    }
+    await run(() => resetTeam(teamId, start))
   }
 
   return (
@@ -364,22 +431,69 @@ export function Admin() {
       </motion.section>
 
       <section className="parchment panel rounded-2xl p-5">
-        <h2 className="font-display text-lg text-[var(--color-ocean-deep)]">ลิงก์ staff 8 โต๊ะ</h2>
+        <h2 className="font-display text-lg text-[var(--color-ocean-deep)]">
+          ตั้งคะแนน / รีเซ็ตทีม
+        </h2>
         <p className="mt-1 text-sm text-[var(--color-ink-muted)]">
-          แต่ละคนเปิดค้างไว้ที่โต๊ะตัวเอง — ไม่ต้องอยู่ในหน้านี้
+          แก้คะแนนทีมตรงๆ หรือรีเซ็ตกลับค่าเริ่มต้น (ค่าเริ่มต้น {DEFAULT_STARTING_SCORE})
         </p>
-        <div className="mt-4 grid grid-cols-4 gap-2 sm:grid-cols-8">
-          {TEAM_IDS.map((id) => (
-            <Link
-              key={id}
-              to={`/staff/${id}`}
-              className="btn-ocean rounded-xl py-3 text-center text-lg font-bold no-underline"
-              target="_blank"
-              rel="noreferrer"
-            >
-              {id}
-            </Link>
-          ))}
+        <div className="mt-4 space-y-3">
+          {TEAM_IDS.map((id) => {
+            const team = teams[id]
+            return (
+              <div
+                key={id}
+                className="rounded-xl border border-[rgba(42,24,16,0.1)] bg-[rgba(255,255,255,0.28)] px-3 py-3"
+              >
+                <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+                  <p className="font-display text-base text-[var(--color-ocean-deep)]">
+                    {team?.name ?? `ทีม ${id}`}
+                  </p>
+                  <p className="font-score text-sm text-[var(--color-ink-muted)]">
+                    ตอนนี้ {team ? formatScore(team.score) : '—'}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <input
+                    type="number"
+                    min={0}
+                    value={scoreDrafts[id] ?? ''}
+                    onChange={(e) =>
+                      setScoreDrafts((d) => ({ ...d, [id]: e.target.value }))
+                    }
+                    className="input-field min-w-0 flex-1 py-2 text-base"
+                    placeholder="คะแนน"
+                  />
+                  <button
+                    type="button"
+                    disabled={busy || !team}
+                    onClick={() => void onSetScore(id)}
+                    className="btn-ocean rounded-lg px-3 py-2 text-sm font-semibold"
+                  >
+                    ตั้งคะแนน
+                  </button>
+                  <input
+                    type="number"
+                    min={0}
+                    value={resetDrafts[id] ?? String(DEFAULT_STARTING_SCORE)}
+                    onChange={(e) =>
+                      setResetDrafts((d) => ({ ...d, [id]: e.target.value }))
+                    }
+                    className="input-field w-28 py-2 text-base"
+                    placeholder="เริ่มต้น"
+                  />
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void onResetTeam(id)}
+                    className="btn-sea rounded-lg px-3 py-2 text-sm font-semibold"
+                  >
+                    รีเซ็ตทีม
+                  </button>
+                </div>
+              </div>
+            )
+          })}
         </div>
       </section>
 

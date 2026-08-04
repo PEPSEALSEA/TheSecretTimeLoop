@@ -8,7 +8,6 @@ import {
   effectivePhase,
   markTeamBet,
   markTeamChoice,
-  markTeamScored,
   questionProgressLabel,
   scoredCount,
   subscribeGame,
@@ -17,19 +16,13 @@ import {
 import { getQuestion, type ChoiceId } from '../lib/questions'
 import {
   BET_OPTIONS,
-  DEFAULT_STARTING_SCORE,
   TEAM_IDS,
   formatMultiplier,
   formatScore,
   type TeamState,
 } from '../lib/scoring'
 import { unlockAudio } from '../lib/sounds'
-import {
-  ensureTeam,
-  resetTeam,
-  setTeamScore,
-  subscribeTeam,
-} from '../lib/teams'
+import { ensureTeam, subscribeTeam } from '../lib/teams'
 
 export function StaffTeam() {
   const { teamId = '' } = useParams()
@@ -37,20 +30,12 @@ export function StaffTeam() {
 
   const [game, setGame] = useState<GameState | null>(null)
   const [team, setTeam] = useState<TeamState | null>(null)
-  const [manualScore, setManualScore] = useState('')
-  const [startingScore, setStartingScore] = useState(String(DEFAULT_STARTING_SCORE))
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [savedFlash, setSavedFlash] = useState(false)
 
   useEffect(() => {
     if (!valid) return
-    ensureTeam(teamId)
-      .then((t) => {
-        setStartingScore(String(t.startingScore))
-        setManualScore(String(Math.round(t.score)))
-      })
-      .catch((e) => setError(String(e)))
+    ensureTeam(teamId).catch((e) => setError(String(e)))
     const unsubTeam = subscribeTeam(teamId, setTeam)
     const unsubGame = subscribeGame(setGame)
     return () => {
@@ -59,18 +44,12 @@ export function StaffTeam() {
     }
   }, [teamId, valid])
 
-  useEffect(() => {
-    if (!team) return
-    setManualScore(String(Math.round(team.score)))
-  }, [team])
-
   const phase = game ? effectivePhase(game) : 'lobby'
   const canBet =
     phase === 'betting' || phase === 'question' || phase === 'waiting'
   const canChoose = phase === 'question' || phase === 'waiting'
   const canPlay = canBet
   const canScore = phase === 'scores'
-  const alreadyScored = Boolean(game?.scoredTeams[teamId])
   const selectedChoice = game?.teamChoices[teamId] ?? null
   const selectedBet = game?.teamBets[teamId] ?? null
   const doneCount = game ? scoredCount(game) : 0
@@ -79,14 +58,6 @@ export function StaffTeam() {
   const question = game ? getQuestion(game.questionIndex) : null
 
   if (!valid) return <Navigate to="/" replace />
-
-  async function afterSave() {
-    if (canScore) {
-      await markTeamScored(teamId)
-      setSavedFlash(true)
-      window.setTimeout(() => setSavedFlash(false), 1200)
-    }
-  }
 
   async function onPickChoice(choice: ChoiceId) {
     if (!canChoose) return
@@ -113,44 +84,6 @@ export function StaffTeam() {
     setError(null)
     try {
       await markTeamBet(teamId, amount)
-    } catch (err) {
-      setError(String(err))
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  async function onSetScore() {
-    if (!canScore) return
-    const score = Number(manualScore)
-    if (!Number.isFinite(score) || score < 0) {
-      setError('คะแนนที่ตั้งไม่ถูกต้อง')
-      return
-    }
-    setBusy(true)
-    setError(null)
-    try {
-      await setTeamScore(teamId, score)
-      await afterSave()
-    } catch (err) {
-      setError(String(err))
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  async function onReset() {
-    if (!canScore) return
-    const start = Number(startingScore)
-    if (!Number.isFinite(start) || start < 0) {
-      setError('คะแนนเริ่มต้นไม่ถูกต้อง')
-      return
-    }
-    setBusy(true)
-    setError(null)
-    try {
-      await resetTeam(teamId, start)
-      await afterSave()
     } catch (err) {
       setError(String(err))
     } finally {
@@ -211,32 +144,13 @@ export function StaffTeam() {
               </p>
             )}
           </div>
-          {(phase === 'reveal' || phase === 'scores') && alreadyScored && (
-            <span className="rounded-full bg-[rgba(45,138,94,0.18)] px-2.5 py-1 text-xs font-bold text-[var(--color-success)]">
-              อัปเดตแล้ว
-            </span>
-          )}
         </div>
-        {(phase === 'reveal' || phase === 'scores') && (
-          <div className="mt-2 rounded-lg bg-[rgba(255,255,255,0.35)] px-2.5 py-1.5 text-xs text-[var(--color-ink-muted)]">
-            <p>
-              {selectedBet != null
-                ? `เดิมพัน ${formatScore(selectedBet)}${
-                    selectedChoice ? ` · เลือก ${selectedChoice}` : ' · ไม่ได้เลือกคำตอบ'
-                  }`
-                : 'ทีมนี้ยังไม่ได้วางเดิมพัน'}
-            </p>
-            <p className="mt-1">เฉลยดูที่จอใหญ่เท่านั้น · staff ไม่แสดงผลถูก/ผิด</p>
-          </div>
-        )}
       </motion.div>
 
       <motion.header
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`parchment panel mb-3 rounded-xl p-4 text-center ${
-          savedFlash ? 'panel-glow' : ''
-        }`}
+        className="parchment panel mb-3 rounded-xl p-4 text-center"
       >
         <p className="text-[0.65rem] font-bold uppercase tracking-[0.35em] text-[var(--color-ink-muted)]">
           คะแนนทีมนี้
@@ -347,58 +261,14 @@ export function StaffTeam() {
       )}
 
       {canScore ? (
-        <>
-          <section className="parchment panel mb-3 rounded-xl p-4">
-            <p className="font-display text-lg text-[var(--color-ocean-deep)]">
-              คิดคะแนนอัตโนมัติแล้ว
-            </p>
-            <p className="mt-1 text-sm text-[var(--color-ink-muted)]">
-              ไม่ต้องกดยืนยัน · แก้คะแนนด้านล่างได้ถ้าจำเป็น
-            </p>
-          </section>
-
-          <section className="parchment panel mb-3 space-y-2 rounded-xl p-4">
-            <h2 className="font-display text-base text-[var(--color-ocean-deep)]">ตั้งคะแนนตรงๆ</h2>
-            <div className="flex gap-2">
-              <input
-                type="number"
-                min={0}
-                value={manualScore}
-                onChange={(e) => setManualScore(e.target.value)}
-                className="input-field min-w-0 flex-1 py-2 text-base"
-              />
-              <button
-                type="button"
-                disabled={busy || !team}
-                onClick={onSetScore}
-                className="btn-ocean rounded-lg px-3 py-2 text-sm font-semibold"
-              >
-                ตั้งคะแนน
-              </button>
-            </div>
-          </section>
-
-          <section className="parchment panel rounded-xl p-4">
-            <h2 className="font-display text-base text-[var(--color-ocean-deep)]">รีเซ็ตทีมนี้</h2>
-            <div className="mt-2 flex gap-2">
-              <input
-                type="number"
-                min={0}
-                value={startingScore}
-                onChange={(e) => setStartingScore(e.target.value)}
-                className="input-field min-w-0 flex-1 py-2 text-base"
-              />
-              <button
-                type="button"
-                disabled={busy}
-                onClick={onReset}
-                className="btn-sea rounded-lg px-3 py-2 text-sm font-semibold"
-              >
-                รีเซ็ตทีม
-              </button>
-            </div>
-          </section>
-        </>
+        <section className="parchment panel mb-3 rounded-xl p-4">
+          <p className="font-display text-lg text-[var(--color-ocean-deep)]">
+            คิดคะแนนอัตโนมัติแล้ว
+          </p>
+          <p className="mt-1 text-sm text-[var(--color-ink-muted)]">
+            รอ host เปิดข้อต่อไป · ถ้าต้องแก้คะแนนให้แก้ที่หน้า admin
+          </p>
+        </section>
       ) : (
         !canPlay &&
         phase !== 'reveal' && (
