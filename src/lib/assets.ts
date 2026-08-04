@@ -7,7 +7,12 @@ export const LEADERBOARD_IMAGE_FILES = [
   'status-board.png',
 ] as const
 
-export const QUESTION_IMAGE_FILES = ['q5-magnus.png'] as const
+export const QUESTION_IMAGE_FILES = [
+  'q5-magnus.png',
+  'q7-wifi.png',
+  'q13-candles.png',
+  'q18-anc.png',
+] as const
 
 export function leaderboardAsset(file: string): string {
   const base = import.meta.env.BASE_URL.endsWith('/')

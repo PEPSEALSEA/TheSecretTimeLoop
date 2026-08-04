@@ -561,6 +561,41 @@
     line-height: 1.26;
   }
 
+  .dsp-prompt-img {
+    display: block;
+    width: auto;
+    max-width: min(560px, 72%);
+    max-height: 220px;
+    margin: 10px auto 0;
+    object-fit: contain;
+    border-radius: 0.75rem;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+  }
+
+  .dsp-scroll-question-img .dsp-scroll-body {
+    gap: 8px;
+    padding: 48px 130px 56px;
+    justify-content: flex-start;
+  }
+
+  .dsp-scroll-question-img .dsp-prompt {
+    font-size: 1.95rem;
+    max-width: 36em;
+  }
+
+  .dsp-scroll-question-img .dsp-choices {
+    margin-top: 12px;
+  }
+
+  .dsp-scroll-question-img .dsp-choices .dsp-choice-face {
+    min-height: 4.4rem;
+  }
+
+  .dsp-scroll-question-img .dsp-choices .dsp-choice-text {
+    font-size: 1.15rem;
+    line-height: 1.2;
+  }
+
   .dsp-choices {
     display: grid;
     grid-template-columns: 1fr 1fr;

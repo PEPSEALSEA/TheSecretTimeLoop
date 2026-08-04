@@ -249,6 +249,7 @@ export function DisplayAll() {
             : 'scores'
 
   const hasAnswerImage = Boolean(question?.answerImage)
+  const hasPromptImage = Boolean(question?.promptImage)
 
   return (
     <main className="lb-viewport" onPointerDown={unlockAudio}>
@@ -274,13 +275,29 @@ export function DisplayAll() {
           {phase === 'question' && question && (
             <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
               <div className="dsp-center dsp-center-tight">
-                <ScrollPanel variant="content" className="dsp-scroll-question">
+                <ScrollPanel
+                  variant="content"
+                  className={
+                    hasPromptImage
+                      ? 'dsp-scroll-question dsp-scroll-question-img'
+                      : 'dsp-scroll-question'
+                  }
+                >
                   <p className="dsp-heading">โจทย์</p>
                   <p className="dsp-round">
                     ข้อ {roundNumber}/{TOTAL_QUESTIONS}
                     <span className="dsp-mul"> · ×{formatMultiplier(question.multiplier)}</span>
                   </p>
                   <p className={fitPromptClass(question.prompt)}>{question.prompt}</p>
+                  {hasPromptImage && question.promptImage && (
+                    <img
+                      src={questionImageAsset(question.promptImage)}
+                      alt=""
+                      className="dsp-prompt-img"
+                      draggable={false}
+                      decoding="sync"
+                    />
+                  )}
                   <div className={fitChoicesClass(question.choices)}>
                     {question.choices.map((choice) => (
                       <div key={choice.id} className="dsp-choice">
