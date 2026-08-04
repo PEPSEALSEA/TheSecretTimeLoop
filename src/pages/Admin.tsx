@@ -5,6 +5,7 @@ import {
   answeredCount,
   betCount,
   effectivePhase,
+  jumpToQuestion,
   lockQuestion,
   nextQuestion,
   nextQuestionLabel,
@@ -19,7 +20,7 @@ import {
   subscribeGame,
   type GameState,
 } from '../lib/game'
-import { ROUND_LABEL, TOTAL_QUESTIONS, getQuestion } from '../lib/questions'
+import { QUESTIONS, ROUND_LABEL, TOTAL_QUESTIONS, getQuestion } from '../lib/questions'
 import {
   DEFAULT_STARTING_SCORE,
   TEAM_IDS,
@@ -54,6 +55,7 @@ export function Admin() {
   )
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [jumpTarget, setJumpTarget] = useState('1')
   const lastScores = useRef<Record<string, number>>({})
 
   useEffect(() => subscribeGame(setGame), [])
@@ -133,6 +135,33 @@ export function Admin() {
       return
     }
     await run(() => resetTeam(teamId, start))
+  }
+
+  function confirmResetGame() {
+    const ok = window.confirm(
+      'รีเซ็ตเกมทั้งหมด?\n\nสถานะเกมจะกลับไปรอเริ่ม · คะแนนทีมจะไม่ถูกรีเซ็ต',
+    )
+    if (!ok) return
+    void run(resetGame)
+  }
+
+  async function onJumpQuestion() {
+    const n = Number(jumpTarget)
+    if (!Number.isInteger(n) || n < 1 || n > TOTAL_QUESTIONS) {
+      setError(`เลือกข้อ 1–${TOTAL_QUESTIONS}`)
+      return
+    }
+    const index = n - 1
+    if (game && game.questionIndex === index && phase !== 'lobby' && phase !== 'finished') {
+      const ok = window.confirm(`อยู่ข้อ ${n} อยู่แล้ว ต้องการเริ่มรอบเดิมพันข้อนี้อีกครั้งไหม?`)
+      if (!ok) return
+    } else {
+      const ok = window.confirm(
+        `ข้ามไปข้อ ${n}/${TOTAL_QUESTIONS}?\n\nจะเข้าหน้าวางเดิมพันของข้อนั้นทันที`,
+      )
+      if (!ok) return
+    }
+    await run(() => jumpToQuestion(index))
   }
 
   return (
@@ -410,7 +439,7 @@ export function Admin() {
             <button
               type="button"
               disabled={busy}
-              onClick={() => run(resetGame)}
+              onClick={confirmResetGame}
               className="btn-gold rounded-xl px-5 py-3 font-semibold"
             >
               เริ่มเกมใหม่
@@ -421,7 +450,7 @@ export function Admin() {
             <button
               type="button"
               disabled={busy}
-              onClick={() => run(resetGame)}
+              onClick={confirmResetGame}
               className="btn-sea rounded-xl px-4 py-3 text-sm font-semibold"
             >
               รีเซ็ตเกม
@@ -429,6 +458,42 @@ export function Admin() {
           )}
         </div>
       </motion.section>
+
+      <section className="parchment panel mb-5 rounded-2xl p-5">
+        <h2 className="font-display text-lg text-[var(--color-ocean-deep)]">
+          ข้ามไปข้อ
+        </h2>
+        <p className="mt-1 text-sm text-[var(--color-ink-muted)]">
+          กระโดดไปหน้าวางเดิมพันของข้อที่เลือก · ไม่คิดคะแนนรอบปัจจุบัน
+        </p>
+        <div className="mt-4 flex flex-wrap items-end gap-2">
+          <label className="min-w-[10rem] flex-1">
+            <span className="mb-1 block text-xs font-semibold text-[var(--color-ink-muted)]">
+              เลือกข้อ
+            </span>
+            <select
+              value={jumpTarget}
+              onChange={(e) => setJumpTarget(e.target.value)}
+              className="input-field py-2 text-base"
+            >
+              {QUESTIONS.map((q) => (
+                <option key={q.id} value={String(q.number)}>
+                  ข้อ {q.number}/{TOTAL_QUESTIONS}
+                  {game && game.questionIndex === q.number - 1 ? ' · ตอนนี้' : ''}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void onJumpQuestion()}
+            className="btn-gold rounded-xl px-5 py-3 font-semibold"
+          >
+            ข้ามไปข้อ {jumpTarget}
+          </button>
+        </div>
+      </section>
 
       <section className="parchment panel rounded-2xl p-5">
         <h2 className="font-display text-lg text-[var(--color-ocean-deep)]">

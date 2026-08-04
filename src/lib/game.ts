@@ -217,6 +217,14 @@ export async function nextQuestion(currentIndex: number): Promise<void> {
   await set(gameRef(), freshRound('betting', next))
 }
 
+export async function jumpToQuestion(questionIndex: number): Promise<void> {
+  const q = getQuestion(questionIndex)
+  if (!q) {
+    throw new Error('ไม่พบข้อที่เลือก')
+  }
+  await set(gameRef(), freshRound('betting', questionIndex))
+}
+
 export async function resetGame(): Promise<void> {
   await set(gameRef(), { ...DEFAULT_GAME })
 }
