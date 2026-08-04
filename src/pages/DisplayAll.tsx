@@ -1,7 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { GameTimer } from '../components/GameTimer'
 import { TeamGrid } from '../components/TeamGrid'
 import {
   leaderboardAsset,
@@ -9,18 +8,17 @@ import {
   questionImageAsset,
 } from '../lib/assets'
 import {
-  answeredCount as countAnsweredTeams,
+  betCount as countBetTeams,
   effectivePhase,
   subscribeGame,
   type GameState,
 } from '../lib/game'
 import { getQuestion, TOTAL_QUESTIONS } from '../lib/questions'
 import type { TeamState } from '../lib/scoring'
-import { TEAM_IDS, formatMultiplier } from '../lib/scoring'
+import { TEAM_IDS, formatMultiplier, formatScore } from '../lib/scoring'
 import { playLeaderboardChangeSound, playScoreboardUpdateSound, unlockAudio } from '../lib/sounds'
 import { STAGE_H, STAGE_W, useStageScale } from '../lib/stage'
 import { subscribeAllTeams } from '../lib/teams'
-import { remainingMs, useNow } from '../lib/timer'
 
 const panelTransition = {
   duration: 0.42,
@@ -128,6 +126,35 @@ function fitChoicesClass(choices: { text: string }[]): string {
   return 'dsp-choices'
 }
 
+function TeamBetGrid({
+  teamBets,
+  teams,
+}: {
+  teamBets: Record<string, number>
+  teams: Record<string, TeamState>
+}) {
+  return (
+    <div className="dsp-bet-grid">
+      {TEAM_IDS.map((id) => {
+        const bet = teamBets[id]
+        const name = teams[id]?.name ?? `ทีม ${id}`
+        const placed = bet != null
+        return (
+          <div
+            key={id}
+            className={`dsp-bet-card ${placed ? 'dsp-bet-card-on' : 'dsp-bet-card-off'}`}
+          >
+            <span className="dsp-bet-team">{name}</span>
+            <span className="dsp-bet-value">
+              {placed ? formatScore(bet) : '—'}
+            </span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export function DisplayAll() {
   const [game, setGame] = useState<GameState | null>(null)
   const [teams, setTeams] = useState<Record<string, TeamState>>({})
@@ -155,13 +182,9 @@ export function DisplayAll() {
 
   const phase = game ? effectivePhase(game) : 'lobby'
   const question = game ? getQuestion(game.questionIndex) : null
-  const timerActive = phase === 'question' && game?.endsAt != null
-  const now = useNow(timerActive || phase === 'waiting')
-  const left = remainingMs(game?.endsAt ?? null, now)
-  const totalMs = (question?.durationSec ?? 0) * 1000
   const isBoard = phase === 'scores' || phase === 'finished'
   const roundNumber = (game?.questionIndex ?? 0) + 1
-  const answeredCount = game ? countAnsweredTeams(game) : 0
+  const placedBets = game ? countBetTeams(game) : 0
 
   useEffect(() => {
     const prevHtml = document.documentElement.style.overflow
@@ -240,23 +263,21 @@ export function DisplayAll() {
   const panelKey =
     phase === 'lobby'
       ? 'lobby'
-      : phase === 'question'
-        ? `q-${game?.questionIndex}`
-        : phase === 'waiting'
-          ? 'waiting'
-          : phase === 'reveal'
-            ? `reveal-${game?.questionIndex}`
-            : 'scores'
+      : phase === 'betting'
+        ? `bet-${game?.questionIndex}`
+        : phase === 'question'
+          ? `q-${game?.questionIndex}`
+          : phase === 'waiting'
+            ? 'waiting'
+            : phase === 'reveal'
+              ? `reveal-${game?.questionIndex}`
+              : 'scores'
 
   const hasAnswerImage = Boolean(question?.answerImage)
   const hasPromptImage = Boolean(question?.promptImage)
 
   return (
     <main className="lb-viewport" onPointerDown={unlockAudio}>
-      {timerActive && left > 0 && (
-        <GameTimer remainingMs={left} totalMs={totalMs} />
-      )}
-
       <StageShell stageScale={stageScale}>
         <AnimatePresence mode="sync" initial={false}>
           {phase === 'lobby' && (
@@ -272,7 +293,42 @@ export function DisplayAll() {
             </motion.div>
           )}
 
-          {phase === 'question' && question && (
+          {phase === 'betting' && question && (
+            <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
+              <div className="dsp-center dsp-center-tight">
+                <ScrollPanel
+                  variant="content"
+                  className={
+                    hasPromptImage
+                      ? 'dsp-scroll-betting dsp-scroll-betting-img'
+                      : 'dsp-scroll-betting'
+                  }
+                >
+                  <p className="dsp-heading">วางเดิมพัน</p>
+                  <p className="dsp-round">
+                    ข้อ {roundNumber}/{TOTAL_QUESTIONS}
+                    <span className="dsp-mul"> · ×{formatMultiplier(question.multiplier)}</span>
+                  </p>
+                  <p className={fitPromptClass(question.prompt)}>{question.prompt}</p>
+                  {hasPromptImage && question.promptImage && (
+                    <img
+                      src={questionImageAsset(question.promptImage)}
+                      alt=""
+                      className="dsp-prompt-img"
+                      draggable={false}
+                      decoding="sync"
+                    />
+                  )}
+                  <p className="dsp-bet-status">
+                    ลงเดิมพันแล้ว {placedBets}/{TEAM_IDS.length} ทีม
+                  </p>
+                  <TeamBetGrid teamBets={game?.teamBets ?? {}} teams={teams} />
+                </ScrollPanel>
+              </div>
+            </motion.div>
+          )}
+
+          {(phase === 'question' || phase === 'waiting') && question && (
             <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
               <div className="dsp-center dsp-center-tight">
                 <ScrollPanel
@@ -309,19 +365,6 @@ export function DisplayAll() {
                       </div>
                     ))}
                   </div>
-                </ScrollPanel>
-              </div>
-            </motion.div>
-          )}
-
-          {phase === 'waiting' && (
-            <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
-              <div className="dsp-center">
-                <ScrollPanel variant="status" className="dsp-scroll-status-lg">
-                  <h1 className="dsp-title dsp-title-hero">หมดเวลา</h1>
-                  <p className="dsp-answered-count">
-                    ตอบแล้ว {answeredCount}/{TEAM_IDS.length} ทีม
-                  </p>
                 </ScrollPanel>
               </div>
             </motion.div>

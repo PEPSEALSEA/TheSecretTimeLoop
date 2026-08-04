@@ -3,10 +3,11 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   answeredCount,
+  betCount,
   effectivePhase,
-  lockQuestion,
   nextQuestion,
   nextQuestionLabel,
+  openQuestion,
   questionProgressLabel,
   resetGame,
   scoredCount,
@@ -17,13 +18,13 @@ import {
   type GameState,
 } from '../lib/game'
 import { QUESTIONS, ROUND_LABEL, TOTAL_QUESTIONS, getQuestion } from '../lib/questions'
-import { TEAM_IDS, formatMultiplier } from '../lib/scoring'
-import { remainingMs, useNow } from '../lib/timer'
+import { TEAM_IDS, formatMultiplier, formatScore } from '../lib/scoring'
 
 const phaseLabel: Record<string, string> = {
   lobby: 'รอเริ่ม',
-  question: 'กำลังจับเวลา',
-  waiting: 'หมดเวลา · รอเปิดเฉลย',
+  betting: 'วางเดิมพัน · โจทย์อย่างเดียว',
+  question: 'แสดงตัวเลือก',
+  waiting: 'รอเปิดเฉลย',
   reveal: 'แสดงเฉลย',
   scores: 'รอ staff แก้คะแนน',
   finished: 'จบเกม',
@@ -38,11 +39,10 @@ export function Admin() {
 
   const phase = game ? effectivePhase(game) : 'lobby'
   const question = game ? getQuestion(game.questionIndex) : null
-  const timerActive = phase === 'question' && game?.endsAt != null
-  const now = useNow(timerActive || phase === 'waiting')
-  const left = remainingMs(game?.endsAt ?? null, now)
   const doneCount = game ? scoredCount(game) : 0
   const answeredTeamsCount = game ? answeredCount(game) : 0
+  const betTeamsCount = game ? betCount(game) : 0
+  const canReveal = phase === 'betting' || phase === 'question' || phase === 'waiting'
 
   async function run(action: () => Promise<void>) {
     setBusy(true)
@@ -88,29 +88,29 @@ export function Admin() {
             {game && phase !== 'lobby' && (
               <p className="mt-1 text-sm text-[var(--color-ink-muted)]">
                 {questionProgressLabel(game.questionIndex)}
-                {question ? ` · ${question.durationSec}s` : ''}
+                {question ? ` · ×${formatMultiplier(question.multiplier)}` : ''}
               </p>
             )}
           </div>
-          {phase === 'question' && (
-            <div className="rounded-xl bg-[rgba(255,255,255,0.4)] px-4 py-2 text-center">
-              <p className="text-[0.65rem] font-bold uppercase tracking-[0.24em] text-[var(--color-ink-muted)]">
-                เหลือ
-              </p>
-              <p className="font-score text-2xl text-[var(--color-ocean-deep)]">
-                {Math.ceil(left / 1000)}s
-              </p>
-            </div>
-          )}
-          {(phase === 'question' || phase === 'waiting') && (
-            <div className="rounded-xl bg-[rgba(255,255,255,0.4)] px-4 py-2 text-center">
-              <p className="text-[0.65rem] font-bold uppercase tracking-[0.24em] text-[var(--color-ink-muted)]">
-                ตอบแล้ว
-              </p>
-              <p className="font-score text-2xl text-[var(--color-ocean-deep)]">
-                {answeredTeamsCount}/{TEAM_IDS.length}
-              </p>
-            </div>
+          {(phase === 'betting' || phase === 'question' || phase === 'waiting') && (
+            <>
+              <div className="rounded-xl bg-[rgba(255,255,255,0.4)] px-4 py-2 text-center">
+                <p className="text-[0.65rem] font-bold uppercase tracking-[0.24em] text-[var(--color-ink-muted)]">
+                  เดิมพันแล้ว
+                </p>
+                <p className="font-score text-2xl text-[var(--color-ocean-deep)]">
+                  {betTeamsCount}/{TEAM_IDS.length}
+                </p>
+              </div>
+              <div className="rounded-xl bg-[rgba(255,255,255,0.4)] px-4 py-2 text-center">
+                <p className="text-[0.65rem] font-bold uppercase tracking-[0.24em] text-[var(--color-ink-muted)]">
+                  ตอบแล้ว
+                </p>
+                <p className="font-score text-2xl text-[var(--color-ocean-deep)]">
+                  {answeredTeamsCount}/{TEAM_IDS.length}
+                </p>
+              </div>
+            </>
           )}
           {phase === 'scores' && (
             <div className="rounded-xl bg-[rgba(255,255,255,0.4)] px-4 py-2 text-center">
@@ -124,42 +124,52 @@ export function Admin() {
           )}
         </div>
 
-        {question && (phase === 'question' || phase === 'waiting' || phase === 'reveal') && (
-          <div className="mt-4 rounded-xl border border-dashed border-[rgba(42,24,16,0.14)] px-4 py-3">
-            <p className="text-sm text-[var(--color-ink-muted)]">
-              โจทย์ · ×{formatMultiplier(question.multiplier)} · {question.durationSec}s
-            </p>
-            <p className="mt-1 font-display text-lg text-[var(--color-ocean-deep)]">
-              {question.prompt}
-            </p>
-            {(phase === 'reveal' || phase === 'waiting') && (
-              <p className="mt-2 text-sm text-[var(--color-success)]">
-                เฉลย: {question.answerLabel}
+        {question &&
+          (phase === 'betting' ||
+            phase === 'question' ||
+            phase === 'waiting' ||
+            phase === 'reveal') && (
+            <div className="mt-4 rounded-xl border border-dashed border-[rgba(42,24,16,0.14)] px-4 py-3">
+              <p className="text-sm text-[var(--color-ink-muted)]">
+                โจทย์ · ×{formatMultiplier(question.multiplier)}
               </p>
-            )}
-            {(phase === 'question' || phase === 'waiting') && game && (
-              <div className="mt-3 grid grid-cols-8 gap-1.5">
-                {TEAM_IDS.map((id) => {
-                  const choice = game.teamChoices[id]
-                  return (
-                    <div
-                      key={id}
-                      className={`rounded-lg py-1.5 text-center text-xs font-bold ${
-                        choice
-                          ? 'bg-[rgba(45,138,94,0.18)] text-[var(--color-success)]'
-                          : 'bg-[rgba(42,24,16,0.06)] text-[var(--color-ink-muted)]'
-                      }`}
-                      title={choice ? `เลือก ${choice}` : 'ยังไม่ตอบ'}
-                    >
-                      {id}
-                      {choice ? `·${choice}` : ''}
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        )}
+              <p className="mt-1 font-display text-lg text-[var(--color-ocean-deep)]">
+                {question.prompt}
+              </p>
+              {(phase === 'reveal' || phase === 'waiting') && (
+                <p className="mt-2 text-sm text-[var(--color-success)]">
+                  เฉลย: {question.answerLabel}
+                </p>
+              )}
+              {(phase === 'betting' || phase === 'question' || phase === 'waiting') &&
+                game && (
+                  <div className="mt-3 grid grid-cols-4 gap-1.5 sm:grid-cols-8">
+                    {TEAM_IDS.map((id) => {
+                      const choice = game.teamChoices[id]
+                      const bet = game.teamBets[id]
+                      return (
+                        <div
+                          key={id}
+                          className={`rounded-lg py-1.5 text-center text-xs font-bold ${
+                            bet != null || choice
+                              ? 'bg-[rgba(45,138,94,0.18)] text-[var(--color-success)]'
+                              : 'bg-[rgba(42,24,16,0.06)] text-[var(--color-ink-muted)]'
+                          }`}
+                          title={[
+                            bet != null ? `เดิมพัน ${formatScore(bet)}` : 'ยังไม่เดิมพัน',
+                            choice ? `เลือก ${choice}` : 'ยังไม่ตอบ',
+                          ].join(' · ')}
+                        >
+                          {id}
+                          {bet != null ? `·${bet}` : ''}
+                          {choice ? `·${choice}` : ''}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+            </div>
+          )}
 
         {phase === 'scores' && game && (
           <div className="mt-4 grid grid-cols-8 gap-2">
@@ -193,18 +203,18 @@ export function Admin() {
             </button>
           )}
 
-          {phase === 'question' && (
+          {phase === 'betting' && (
             <button
               type="button"
               disabled={busy}
-              onClick={() => run(lockQuestion)}
-              className="btn-sea rounded-xl px-5 py-3 font-semibold"
+              onClick={() => run(openQuestion)}
+              className="btn-gold rounded-xl px-5 py-3 font-semibold"
             >
-              หมดเวลาทันที
+              เปิดตัวเลือก
             </button>
           )}
 
-          {phase === 'waiting' && (
+          {canReveal && (
             <button
               type="button"
               disabled={busy}

@@ -32,7 +32,9 @@ export type TeamState = {
 
 export const TEAM_IDS = ['1', '2', '3', '4', '5', '6', '7', '8'] as const
 export type TeamId = (typeof TEAM_IDS)[number]
-export const DEFAULT_STARTING_SCORE = 1000
+export const DEFAULT_STARTING_SCORE = 2000
+export const BET_OPTIONS = [100, 200, 300, 400, 500] as const
+export type BetOption = (typeof BET_OPTIONS)[number]
 
 /** Wrong: score - bet. Correct: score - bet + (bet * multiplier) */
 export function computeDelta(bet: number, multiplier: number, result: RoundResult): number {
