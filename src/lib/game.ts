@@ -158,7 +158,14 @@ export async function startGame(): Promise<void> {
   await set(gameRef(), freshRound('betting', 0))
 }
 
-export async function openQuestion(questionIndex: number): Promise<void> {
+export async function openQuestion(): Promise<void> {
+  await update(gameRef(), {
+    phase: 'question',
+    endsAt: null,
+  })
+}
+
+export async function startQuestionTimer(questionIndex: number): Promise<void> {
   const q = getQuestion(questionIndex)
   if (!q) return
   await update(gameRef(), {

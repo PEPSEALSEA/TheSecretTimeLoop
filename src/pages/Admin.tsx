@@ -15,6 +15,7 @@ import {
   showReveal,
   showScores,
   startGame,
+  startQuestionTimer,
   subscribeGame,
   type GameState,
 } from '../lib/game'
@@ -25,7 +26,7 @@ import { remainingMs, useNow } from '../lib/timer'
 const phaseLabel: Record<string, string> = {
   lobby: 'รอเริ่ม',
   betting: 'วางเดิมพัน · โจทย์อย่างเดียว',
-  question: 'กำลังจับเวลา',
+  question: 'แสดงตัวเลือก',
   waiting: 'หมดเวลา · รอเปิดเฉลย',
   reveal: 'แสดงเฉลย',
   scores: 'คะแนนอัปเดตแล้ว',
@@ -41,12 +42,19 @@ export function Admin() {
 
   const phase = game ? effectivePhase(game) : 'lobby'
   const question = game ? getQuestion(game.questionIndex) : null
-  const timerActive = phase === 'question' && game?.endsAt != null
-  const now = useNow(timerActive || phase === 'waiting')
+  const timerRunning = phase === 'question' && game?.endsAt != null
+  const timerPending = phase === 'question' && game?.endsAt == null
+  const now = useNow(timerRunning || phase === 'waiting')
   const left = remainingMs(game?.endsAt ?? null, now)
   const doneCount = game ? scoredCount(game) : 0
   const answeredTeamsCount = game ? answeredCount(game) : 0
   const betTeamsCount = game ? betCount(game) : 0
+  const statusLabel =
+    phase === 'question'
+      ? timerRunning
+        ? 'กำลังจับเวลา'
+        : 'แสดงตัวเลือก · รอจับเวลา'
+      : (phaseLabel[phase] ?? phase)
 
   async function run(action: () => Promise<void>) {
     setBusy(true)
@@ -87,7 +95,7 @@ export function Admin() {
               สถานะเกม
             </p>
             <h2 className="font-display mt-1 text-2xl text-[var(--color-ocean-deep)]">
-              {phaseLabel[phase] ?? phase}
+              {statusLabel}
             </h2>
             {game && phase !== 'lobby' && (
               <p className="mt-1 text-sm text-[var(--color-ink-muted)]">
@@ -112,7 +120,7 @@ export function Admin() {
               </p>
             </div>
           )}
-          {phase === 'question' && (
+          {timerRunning && (
             <div className="rounded-xl bg-[rgba(255,255,255,0.4)] px-4 py-2 text-center">
               <p className="text-[0.65rem] font-bold uppercase tracking-[0.24em] text-[var(--color-ink-muted)]">
                 เหลือ
@@ -265,18 +273,29 @@ export function Admin() {
             </button>
           )}
 
-          {phase === 'betting' && game && (
+          {phase === 'betting' && (
             <button
               type="button"
               disabled={busy}
-              onClick={() => run(() => openQuestion(game.questionIndex))}
+              onClick={() => run(openQuestion)}
               className="btn-gold rounded-xl px-5 py-3 font-semibold"
             >
-              เปิดตัวเลือก · จับเวลา {question?.durationSec ?? 0}s
+              เปิดตัวเลือก
             </button>
           )}
 
-          {phase === 'question' && (
+          {timerPending && game && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => run(() => startQuestionTimer(game.questionIndex))}
+              className="btn-gold rounded-xl px-5 py-3 font-semibold"
+            >
+              จับเวลา {question?.durationSec ?? 0}s
+            </button>
+          )}
+
+          {timerRunning && (
             <button
               type="button"
               disabled={busy}

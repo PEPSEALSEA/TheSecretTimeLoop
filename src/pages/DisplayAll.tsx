@@ -10,7 +10,6 @@ import {
 } from '../lib/assets'
 import {
   answeredCount as countAnsweredTeams,
-  betCount as countBetTeams,
   effectivePhase,
   subscribeGame,
   type GameState,
@@ -129,25 +128,6 @@ function fitChoicesClass(choices: { text: string }[]): string {
   return 'dsp-choices'
 }
 
-function TeamBetGrid({ teamBets }: { teamBets: Record<string, number> }) {
-  return (
-    <div className="dsp-bet-grid">
-      {TEAM_IDS.map((id) => {
-        const placed = teamBets[id] != null
-        return (
-          <div
-            key={id}
-            className={`dsp-bet-card ${placed ? 'dsp-bet-card-on' : 'dsp-bet-card-off'}`}
-          >
-            <span className="dsp-bet-num">{id}</span>
-            <span className="dsp-bet-label">{placed ? 'ลงแล้ว' : 'รอเดิมพัน'}</span>
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
 export function DisplayAll() {
   const [game, setGame] = useState<GameState | null>(null)
   const [teams, setTeams] = useState<Record<string, TeamState>>({})
@@ -181,7 +161,6 @@ export function DisplayAll() {
   const totalMs = (question?.durationSec ?? 0) * 1000
   const isBoard = phase === 'scores' || phase === 'finished'
   const roundNumber = (game?.questionIndex ?? 0) + 1
-  const placedBets = game ? countBetTeams(game) : 0
   const answeredCount = game ? countAnsweredTeams(game) : 0
 
   useEffect(() => {
@@ -321,10 +300,6 @@ export function DisplayAll() {
                       decoding="sync"
                     />
                   )}
-                  <p className="dsp-bet-status">
-                    ลงเดิมพันแล้ว {placedBets}/{TEAM_IDS.length} ทีม
-                  </p>
-                  <TeamBetGrid teamBets={game?.teamBets ?? {}} />
                 </ScrollPanel>
               </div>
             </motion.div>
