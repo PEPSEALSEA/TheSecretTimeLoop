@@ -472,8 +472,8 @@
   .dsp-scroll-question,
   .dsp-scroll-betting,
   .dsp-scroll-reveal {
-    width: 1920px;
-    height: 1080px;
+    width: 1640px;
+    height: 900px;
   }
 
   .dsp-scroll-stage .dsp-scroll-body,
@@ -883,8 +883,8 @@
   }
 
   .dsp-scroll-reveal-img {
-    width: 1920px;
-    height: 1080px;
+    width: 1640px;
+    height: 900px;
   }
 
   .dsp-scroll-reveal-img .dsp-scroll-body {
