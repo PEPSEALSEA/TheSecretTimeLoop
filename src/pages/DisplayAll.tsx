@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { GameTimer } from '../components/GameTimer'
 import { TeamGrid } from '../components/TeamGrid'
+import { ZoomableImage } from '../components/ZoomableImage'
 import {
   leaderboardAsset,
   preloadLeaderboardAssets,
@@ -340,12 +341,9 @@ export function DisplayAll({ layout = 'stage' }: DisplayAllProps) {
                   </p>
                   <p className={fitPromptClass(question.prompt)}>{question.prompt}</p>
                   {hasPromptImage && question.promptImage && (
-                    <img
+                    <ZoomableImage
                       src={questionImageAsset(question.promptImage)}
-                      alt=""
                       className="dsp-prompt-img"
-                      draggable={false}
-                      decoding="sync"
                     />
                   )}
                 </ScrollPanel>
@@ -371,12 +369,9 @@ export function DisplayAll({ layout = 'stage' }: DisplayAllProps) {
                   </p>
                   <p className={fitPromptClass(question.prompt)}>{question.prompt}</p>
                   {hasPromptImage && question.promptImage && (
-                    <img
+                    <ZoomableImage
                       src={questionImageAsset(question.promptImage)}
-                      alt=""
                       className="dsp-prompt-img"
-                      draggable={false}
-                      decoding="sync"
                     />
                   )}
                   <div className={fitChoicesClass(question.choices)}>
@@ -423,12 +418,9 @@ export function DisplayAll({ layout = 'stage' }: DisplayAllProps) {
                   <p className="dsp-round">ข้อ {roundNumber}/{TOTAL_QUESTIONS}</p>
                   <p className="dsp-answer">{question.answerLabel}</p>
                   {hasAnswerImage && question.answerImage && (
-                    <img
+                    <ZoomableImage
                       src={questionImageAsset(question.answerImage)}
-                      alt=""
                       className="dsp-answer-img"
-                      draggable={false}
-                      decoding="sync"
                     />
                   )}
                   <p className={fitExplainClass(question.explanation, hasAnswerImage)}>
