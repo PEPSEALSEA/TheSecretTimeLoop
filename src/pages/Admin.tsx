@@ -92,11 +92,13 @@ export function Admin() {
     })
   }, [teams])
 
-  const phase = game ? effectivePhase(game) : 'lobby'
+  const clockActive =
+    game != null && game.phase !== 'lobby' && game.phase !== 'finished'
+  const now = useNow(clockActive)
+  const phase = game ? effectivePhase(game, now) : 'lobby'
   const question = game ? getQuestion(game.questionIndex) : null
   const timerRunning = phase === 'question' && game?.endsAt != null
   const timerPending = phase === 'question' && game?.endsAt == null
-  const now = useNow(timerRunning || phase === 'waiting')
   const left = remainingMs(game?.endsAt ?? null, now)
   const doneCount = game ? scoredCount(game) : 0
   const answeredTeamsCount = game ? answeredCount(game) : 0

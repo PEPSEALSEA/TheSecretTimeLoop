@@ -1,11 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 
 export function useNow(active: boolean, intervalMs = 200): number {
   const [now, setNow] = useState(() => Date.now())
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!active) return
     setNow(Date.now())
+  }, [active])
+
+  useEffect(() => {
+    if (!active) return
     const id = window.setInterval(() => setNow(Date.now()), intervalMs)
     return () => window.clearInterval(id)
   }, [active, intervalMs])

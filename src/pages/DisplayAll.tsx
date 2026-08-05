@@ -197,10 +197,12 @@ export function DisplayAll({ layout = 'stage' }: DisplayAllProps) {
   useEffect(() => subscribeGame(setGame), [])
   useEffect(() => subscribeAllTeams(setTeams), [])
 
-  const phase = game ? effectivePhase(game) : 'lobby'
+  const clockActive =
+    game != null && game.phase !== 'lobby' && game.phase !== 'finished'
+  const now = useNow(clockActive)
+  const phase = game ? effectivePhase(game, now) : 'lobby'
   const question = game ? getQuestion(game.questionIndex) : null
   const timerActive = phase === 'question' && game?.endsAt != null
-  const now = useNow(timerActive || phase === 'waiting')
   const left = remainingMs(game?.endsAt ?? null, now)
   const totalMs = (question?.durationSec ?? 0) * 1000
   const isBoard = phase === 'scores' || phase === 'finished'
