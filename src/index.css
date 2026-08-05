@@ -919,6 +919,37 @@
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
   }
 
+  .dsp-answer-video {
+    display: block;
+    width: auto;
+    max-width: min(1280px, 92%);
+    max-height: 620px;
+    margin: 14px auto 0;
+    border-radius: 0.75rem;
+    background: #0a0a0a;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
+  }
+
+  .dsp-scroll-reveal-video {
+    width: 1680px;
+    height: 1004px;
+  }
+
+  .dsp-scroll-reveal-video .dsp-scroll-body {
+    gap: 10px;
+    padding: 110px 90px 80px;
+    justify-content: flex-start;
+  }
+
+  .dsp-scroll-reveal-video .dsp-heading {
+    margin-top: 4px;
+  }
+
+  .dsp-scroll-reveal-video .dsp-answer {
+    margin-top: 10px;
+    font-size: 2.8rem;
+  }
+
   .dsp-scroll-reveal-img {
     width: 1680px;
     height: 1004px;
@@ -1095,7 +1126,8 @@
   .lb-fluid .dsp-scroll-question,
   .lb-fluid .dsp-scroll-betting,
   .lb-fluid .dsp-scroll-reveal,
-  .lb-fluid .dsp-scroll-reveal-img {
+  .lb-fluid .dsp-scroll-reveal-img,
+  .lb-fluid .dsp-scroll-reveal-video {
     width: min(94vw, 100%);
     height: min(88dvh, 100%);
     max-width: 1100px;
@@ -1111,7 +1143,8 @@
 
   .lb-fluid .dsp-scroll-betting-img .dsp-scroll-body,
   .lb-fluid .dsp-scroll-question-img .dsp-scroll-body,
-  .lb-fluid .dsp-scroll-reveal-img .dsp-scroll-body {
+  .lb-fluid .dsp-scroll-reveal-img .dsp-scroll-body,
+  .lb-fluid .dsp-scroll-reveal-video .dsp-scroll-body {
     gap: clamp(6px, 1.2vw, 10px);
     padding: clamp(52px, 9vw, 80px) clamp(28px, 6vw, 72px) clamp(36px, 6vw, 64px);
     justify-content: flex-start;
@@ -1219,6 +1252,15 @@
     max-height: clamp(180px, 36dvh, 320px);
   }
 
+  .lb-fluid .dsp-answer-video {
+    max-width: min(960px, 94%);
+    max-height: clamp(240px, 52dvh, 480px);
+  }
+
+  .lb-fluid .dsp-scroll-reveal-video .dsp-answer {
+    font-size: clamp(1.3rem, 3.5vw, 2.2rem);
+  }
+
   .lb-fluid .dsp-title {
     font-size: clamp(1.6rem, 4.5vw, 2.8rem);
   }
@@ -1321,7 +1363,8 @@
     .lb-fluid .dsp-scroll-question,
     .lb-fluid .dsp-scroll-betting,
     .lb-fluid .dsp-scroll-reveal,
-    .lb-fluid .dsp-scroll-reveal-img {
+    .lb-fluid .dsp-scroll-reveal-img,
+    .lb-fluid .dsp-scroll-reveal-video {
       width: min(92vw, 1180px);
       height: min(90dvh, 100%);
     }

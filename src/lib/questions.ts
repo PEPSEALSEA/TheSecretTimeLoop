@@ -17,6 +17,7 @@ export type Question = {
   durationSec: number
   promptImage?: string
   answerImage?: string
+  answerVideo?: string
 }
 
 /** ชุดคำถามจาก PDF 「คำถาม รอบที่ 2」ทั้งหมด 18 ข้อ ตามลำดับ */
@@ -71,6 +72,7 @@ export const QUESTIONS: Question[] = [
     explanation: 'จุดศูนย์ถ่วงไม่จำเป็นต้องอยู่ในตัวเนื้อวัตถุเสมอไป',
     multiplier: 0.7,
     durationSec: 10,
+    answerImage: 'q2-donut.png',
   },
   {
     id: 'q3',
@@ -88,6 +90,7 @@ export const QUESTIONS: Question[] = [
     explanation: 'เสียงเดินทางเร็วที่สุดในของแข็ง รองลงมาคือของเหลว และช้าที่สุดในแก๊ส',
     multiplier: 0.5,
     durationSec: 20,
+    answerImage: 'q3-states.png',
   },
   {
     id: 'q4',
@@ -137,6 +140,7 @@ export const QUESTIONS: Question[] = [
       'เมื่อเรานั่งอยู่ในรถที่เคลื่อนที่ด้วยความเร็วคงที่ แรงลัพธ์ที่กระทำต่อเราเป็นศูนย์ และเมื่อรถหยุด ร่างกายที่พยายามจะรักษาสภาพการเคลื่อนที่เดิมตามกฎข้อที่ 1 ของนิวตัน จึงยังเคลื่อนที่ไปข้างหน้าต่อ เรียกปรากฏการณ์นี้ว่า “ความเฉื่อย”',
     multiplier: 0.5,
     durationSec: 30,
+    answerImage: 'q6-inertia.png',
   },
   {
     id: 'q7',
@@ -173,6 +177,7 @@ export const QUESTIONS: Question[] = [
       'เมื่อแสงอาทิตย์กระทบชั้นบรรยากาศ โมเลกุลแก๊สจะกระเจิงแสงสีฟ้า (ซึ่งมีความยาวคลื่นสั้น) ออกไปทุกทิศทางได้ดีกว่าแสงสีอื่น เรียกว่า การกระเจิงแบบเรย์ลี',
     multiplier: 0.7,
     durationSec: 40,
+    answerImage: 'q8-sky.png',
   },
   {
     id: 'q9',
@@ -204,6 +209,7 @@ export const QUESTIONS: Question[] = [
       'วัตถุสีใด ๆ ก็จะสะท้อนสีนั้นเข้าตาเรา แล้วดูดกลืนสีอื่น เมื่อลูกโป่งสีแดงดูดกลืนสีเขียวซึ่งเป็นสีตรงข้าม พลังงานแสงจึงเปลี่ยนเป็นความร้อนจนลูกโป่งแตก',
     multiplier: 1.5,
     durationSec: 60,
+    answerVideo: 'q10-balloon.mp4',
   },
   {
     id: 'q11',
@@ -222,6 +228,7 @@ export const QUESTIONS: Question[] = [
       'เราและรถพยาบาลเคลื่อนที่ด้วยความเร็วเท่ากันและไปในทิศทางเดียวกัน ทำให้ความเร็วสัมพัทธ์เป็นศูนย์ ความถี่จึงไม่เปลี่ยน',
     multiplier: 1.3,
     durationSec: 30,
+    answerImage: 'q11-doppler.png',
   },
   {
     id: 'q12',
@@ -259,6 +266,7 @@ export const QUESTIONS: Question[] = [
     multiplier: 1.1,
     durationSec: 15,
     promptImage: 'q13-candles.png',
+    answerVideo: 'q13-candles-answer.mp4',
   },
   {
     id: 'q14',
@@ -295,6 +303,7 @@ export const QUESTIONS: Question[] = [
       'เสียงในหัวเราจะทุ้มกว่าปกติ เพราะมีคลื่นความถี่ต่ำที่สั่นผ่านกระดูกศีรษะมารวมด้วย ส่วนเสียงอัดมีเฉพาะคลื่นทางอากาศ จึงเหลือแต่ความถี่สูง ทำให้ฟังดูแหลมกว่าที่เราได้ยินเอง',
     multiplier: 1.5,
     durationSec: 120,
+    answerImage: 'q15-voice.png',
   },
   {
     id: 'q16',
@@ -350,6 +359,7 @@ export const QUESTIONS: Question[] = [
     multiplier: 1.5,
     durationSec: 30,
     promptImage: 'q18-anc.png',
+    answerImage: 'q18-anc-answer.png',
   },
 ]
 

@@ -8,6 +8,7 @@ import {
   leaderboardAsset,
   preloadLeaderboardAssets,
   questionImageAsset,
+  questionVideoAsset,
 } from '../lib/assets'
 import {
   answeredCount as countAnsweredTeams,
@@ -295,12 +296,15 @@ export function DisplayAll({ layout = 'stage' }: DisplayAllProps) {
           ? `q-${game?.questionIndex}`
           : phase === 'waiting'
             ? 'waiting'
-            : phase === 'reveal'
-              ? `reveal-${game?.questionIndex}`
-              : 'scores'
+            : phase === 'revealVideo'
+              ? `reveal-video-${game?.questionIndex}`
+              : phase === 'reveal'
+                ? `reveal-${game?.questionIndex}`
+                : 'scores'
 
   const hasAnswerImage = Boolean(question?.answerImage)
   const hasPromptImage = Boolean(question?.promptImage)
+  const hasAnswerVideo = Boolean(question?.answerVideo)
 
   return (
     <main className={rootClass} onPointerDown={unlockAudio}>
@@ -398,6 +402,29 @@ export function DisplayAll({ layout = 'stage' }: DisplayAllProps) {
                   <p className="dsp-answered-count">
                     ตอบแล้ว {answeredCount}/{TEAM_IDS.length} ทีม
                   </p>
+                </ScrollPanel>
+              </div>
+            </motion.div>
+          )}
+
+          {phase === 'revealVideo' && question && hasAnswerVideo && question.answerVideo && (
+            <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
+              <div className="dsp-center">
+                <ScrollPanel
+                  variant="content"
+                  className="dsp-scroll-stage dsp-scroll-reveal-video"
+                >
+                  <p className="dsp-heading">วิดีโอเฉลย</p>
+                  <p className="dsp-round">ข้อ {roundNumber}/{TOTAL_QUESTIONS}</p>
+                  <p className="dsp-answer">{question.answerLabel}</p>
+                  <video
+                    key={question.answerVideo}
+                    className="dsp-answer-video"
+                    src={questionVideoAsset(question.answerVideo)}
+                    controls
+                    autoPlay
+                    playsInline
+                  />
                 </ScrollPanel>
               </div>
             </motion.div>

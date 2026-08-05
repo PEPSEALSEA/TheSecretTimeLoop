@@ -105,7 +105,7 @@ export function StaffTeam() {
             : selectedBet != null
               ? `เดิมพัน ${formatScore(selectedBet)} · เลือกคำตอบ`
               : 'เลือกคำตอบ + วางเดิมพัน'
-        : phase === 'reveal'
+        : phase === 'reveal' || phase === 'revealVideo'
           ? 'คะแนนอัปเดตอัตโนมัติ · รอเปิดกระดาน'
           : 'รอเริ่ม'
 
@@ -250,13 +250,15 @@ export function StaffTeam() {
         </section>
       )}
 
-      {phase === 'reveal' && (
+      {(phase === 'reveal' || phase === 'revealVideo') && (
         <section className="parchment panel mb-3 rounded-xl p-4">
           <p className="font-display text-lg text-[var(--color-ocean-deep)]">
             คะแนนอัปเดตแล้ว
           </p>
           <p className="mt-1 text-sm text-[var(--color-ink-muted)]">
-            รอ host เปิดกระดานคะแนน · ดูเฉลยที่จอใหญ่เท่านั้น
+            {phase === 'revealVideo'
+              ? 'กำลังเล่นวิดีโอเฉลยบนจอใหญ่ · รอ host เปิดเฉลยข้อความ'
+              : 'รอ host เปิดกระดานคะแนน · ดูเฉลยที่จอใหญ่เท่านั้น'}
           </p>
         </section>
       )}
@@ -272,7 +274,8 @@ export function StaffTeam() {
         </section>
       ) : (
         !canPlay &&
-        phase !== 'reveal' && (
+        phase !== 'reveal' &&
+        phase !== 'revealVideo' && (
           <section className="parchment panel rounded-xl p-5 text-center">
             <p className="font-display text-xl text-[var(--color-ocean-deep)]">เปิดค้างไว้ได้เลย</p>
             <p className="mt-1.5 text-sm text-[var(--color-ink-muted)]">

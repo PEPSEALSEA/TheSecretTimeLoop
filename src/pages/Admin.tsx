@@ -14,6 +14,7 @@ import {
   resetGame,
   scoredCount,
   showReveal,
+  showRevealText,
   showScores,
   startGame,
   startQuestionTimer,
@@ -42,6 +43,7 @@ const phaseLabel: Record<string, string> = {
   betting: 'วางเดิมพัน · โจทย์อย่างเดียว',
   question: 'แสดงตัวเลือก',
   waiting: 'หมดเวลา · รอเปิดเฉลย',
+  revealVideo: 'วิดีโอเฉลย',
   reveal: 'แสดงเฉลย',
   scores: 'คะแนนอัปเดตแล้ว',
   finished: 'จบเกม',
@@ -186,29 +188,37 @@ export function Admin() {
               }
             : phase === 'waiting'
               ? {
-                  label: 'แสดงเฉลย · คิดคะแนนอัตโนมัติ',
+                  label: question?.answerVideo
+                    ? 'แสดงวิดีโอเฉลย · คิดคะแนนอัตโนมัติ'
+                    : 'แสดงเฉลย · คิดคะแนนอัตโนมัติ',
                   onClick: () => void run(showReveal),
                   tone: 'gold' as const,
                 }
-              : phase === 'reveal'
+              : phase === 'revealVideo'
                 ? {
-                    label: 'ไปกระดานคะแนน',
-                    onClick: () => void run(showScores),
+                    label: 'แสดงเฉลยข้อความ',
+                    onClick: () => void run(showRevealText),
                     tone: 'gold' as const,
                   }
-                : phase === 'scores' && game
+                : phase === 'reveal'
                   ? {
-                      label: nextQuestionLabel(game.questionIndex),
-                      onClick: () => void run(() => nextQuestion(game.questionIndex)),
+                      label: 'ไปกระดานคะแนน',
+                      onClick: () => void run(showScores),
                       tone: 'gold' as const,
                     }
-                  : phase === 'finished'
+                  : phase === 'scores' && game
                     ? {
-                        label: 'เริ่มเกมใหม่',
-                        onClick: confirmResetGame,
+                        label: nextQuestionLabel(game.questionIndex),
+                        onClick: () => void run(() => nextQuestion(game.questionIndex)),
                         tone: 'gold' as const,
                       }
-                    : null
+                    : phase === 'finished'
+                      ? {
+                          label: 'เริ่มเกมใหม่',
+                          onClick: confirmResetGame,
+                          tone: 'gold' as const,
+                        }
+                      : null
 
   const hostActions = (
     <div className="flex w-full flex-wrap gap-2">
@@ -378,17 +388,32 @@ export function Admin() {
           (phase === 'betting' ||
             phase === 'question' ||
             phase === 'waiting' ||
+            phase === 'revealVideo' ||
             phase === 'reveal') && (
             <div className="mt-4 rounded-xl border border-dashed border-[rgba(42,24,16,0.14)] px-4 py-3">
               <p className="text-sm text-[var(--color-ink-muted)]">
                 โจทย์ · ×{formatMultiplier(question.multiplier)} · {question.durationSec}s
+                {question.answerVideo ? ' · มีวิดีโอเฉลย' : ''}
+                {question.answerImage ? ' · มีรูปเฉลย' : ''}
               </p>
               <p className="mt-1 font-display text-lg text-[var(--color-ocean-deep)]">
                 {question.prompt}
               </p>
-              {(phase === 'reveal' || phase === 'waiting') && (
+              {(phase === 'reveal' ||
+                phase === 'revealVideo' ||
+                phase === 'waiting') && (
                 <p className="mt-2 text-sm text-[var(--color-success)]">
                   เฉลย: {question.answerLabel}
+                </p>
+              )}
+              {phase === 'revealVideo' && (
+                <p className="mt-2 text-sm text-[var(--color-ink-muted)]">
+                  กำลังเล่นวิดีโอเฉลยบนจอใหญ่ · กดถัดไปเพื่อแสดงเฉลยข้อความ
+                </p>
+              )}
+              {phase === 'reveal' && question.answerVideo && (
+                <p className="mt-2 text-sm text-[var(--color-ink-muted)]">
+                  แสดงเฉลยข้อความแล้ว (หลังวิดีโอ)
                 </p>
               )}
               {phase === 'betting' && game && (

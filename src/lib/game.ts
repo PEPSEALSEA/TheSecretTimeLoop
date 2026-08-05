@@ -9,6 +9,7 @@ export type GamePhase =
   | 'betting'
   | 'question'
   | 'waiting'
+  | 'revealVideo'
   | 'reveal'
   | 'scores'
   | 'finished'
@@ -74,6 +75,7 @@ const PHASES: GamePhase[] = [
   'betting',
   'question',
   'waiting',
+  'revealVideo',
   'reveal',
   'scores',
   'finished',
@@ -187,7 +189,12 @@ export async function showReveal(): Promise<void> {
   }
   const scoredTeams: Record<string, boolean> = {}
   for (const id of TEAM_IDS) scoredTeams[id] = true
-  await update(gameRef(), { phase: 'reveal', endsAt: null, scoredTeams })
+  const phase: GamePhase = question?.answerVideo ? 'revealVideo' : 'reveal'
+  await update(gameRef(), { phase, endsAt: null, scoredTeams })
+}
+
+export async function showRevealText(): Promise<void> {
+  await update(gameRef(), { phase: 'reveal', endsAt: null })
 }
 
 export async function showScores(): Promise<void> {

@@ -8,10 +8,22 @@ export const LEADERBOARD_IMAGE_FILES = [
 ] as const
 
 export const QUESTION_IMAGE_FILES = [
+  'q2-donut.png',
+  'q3-states.png',
   'q5-magnus.png',
+  'q6-inertia.png',
   'q7-wifi.png',
+  'q8-sky.png',
+  'q11-doppler.png',
   'q13-candles.png',
+  'q15-voice.png',
   'q18-anc.png',
+  'q18-anc-answer.png',
+] as const
+
+export const QUESTION_VIDEO_FILES = [
+  'q10-balloon.mp4',
+  'q13-candles-answer.mp4',
 ] as const
 
 export function leaderboardAsset(file: string): string {
@@ -22,6 +34,13 @@ export function leaderboardAsset(file: string): string {
 }
 
 export function questionImageAsset(file: string): string {
+  const base = import.meta.env.BASE_URL.endsWith('/')
+    ? import.meta.env.BASE_URL
+    : `${import.meta.env.BASE_URL}/`
+  return `${base}ui/questions/${file}`
+}
+
+export function questionVideoAsset(file: string): string {
   const base = import.meta.env.BASE_URL.endsWith('/')
     ? import.meta.env.BASE_URL
     : `${import.meta.env.BASE_URL}/`
