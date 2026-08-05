@@ -472,8 +472,8 @@
   .dsp-scroll-question,
   .dsp-scroll-betting,
   .dsp-scroll-reveal {
-    width: 1640px;
-    height: 900px;
+    width: 1280px;
+    height: 1004px;
   }
 
   .dsp-scroll-stage .dsp-scroll-body,
@@ -483,12 +483,12 @@
     box-sizing: border-box;
     justify-content: center;
     gap: 14px;
-    padding: 72px 96px 80px;
+    padding: 88px 110px 96px;
   }
 
   .dsp-scroll-betting-img .dsp-scroll-body {
     gap: 10px;
-    padding: 120px 96px 88px;
+    padding: 110px 110px 88px;
     justify-content: flex-start;
   }
 
@@ -676,7 +676,7 @@
 
   .dsp-scroll-question-img .dsp-scroll-body {
     gap: 10px;
-    padding: 110px 96px 88px;
+    padding: 110px 110px 88px;
     justify-content: flex-start;
   }
 
@@ -883,13 +883,13 @@
   }
 
   .dsp-scroll-reveal-img {
-    width: 1640px;
-    height: 900px;
+    width: 1280px;
+    height: 1004px;
   }
 
   .dsp-scroll-reveal-img .dsp-scroll-body {
     gap: 10px;
-    padding: 110px 96px 88px;
+    padding: 110px 110px 88px;
     justify-content: flex-start;
   }
 

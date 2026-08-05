@@ -74,7 +74,7 @@ function ScrollPanel({
 }) {
   const src =
     variant === 'content'
-      ? leaderboardAsset('team-card.png')
+      ? leaderboardAsset('content-card.png')
       : leaderboardAsset('status-board.png')
 
   return (

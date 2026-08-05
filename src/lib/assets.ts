@@ -3,7 +3,7 @@ export const LEADERBOARD_IMAGE_FILES = [
   'title-scroll.png',
   'round-scroll.png',
   'team-card.png',
-  'content-scroll.png',
+  'content-card.png',
   'status-board.png',
 ] as const
 
