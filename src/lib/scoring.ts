@@ -1,4 +1,4 @@
-export const MULTIPLIERS = [1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7] as const
+export const MULTIPLIERS = [0.5, 0.7, 0.8, 1, 1.1, 1.2, 1.3, 1.5] as const
 
 export type Multiplier = (typeof MULTIPLIERS)[number]
 export type RoundResult = 'correct' | 'wrong'
@@ -36,10 +36,10 @@ export const DEFAULT_STARTING_SCORE = 2000
 export const BET_OPTIONS = [100, 200, 300, 400, 500] as const
 export type BetOption = (typeof BET_OPTIONS)[number]
 
-/** Wrong: score - bet. Correct: score - bet + (bet * multiplier) */
+/** Wrong: score - bet. Correct: score + (bet * multiplier) */
 export function computeDelta(bet: number, multiplier: number, result: RoundResult): number {
   if (result === 'wrong') return -bet
-  return -bet + bet * multiplier
+  return bet * multiplier
 }
 
 export function applyRound(

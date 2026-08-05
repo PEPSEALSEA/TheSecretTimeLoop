@@ -15,8 +15,8 @@ Fonts: **Kanit** (headlines), **Mali** (body), **Pirata One** (English pirate ac
 ## Scoring
 
 - Wrong: `score - bet`
-- Correct: `score - bet + (bet × multiplier)`
-- Multipliers: 1.1 – 1.5
+- Correct: `score + (bet × multiplier)`
+- Multipliers: 0.5 – 1.5 (per question)
 - Staff can also set their team's score directly
 
 ## Dev
