@@ -23,14 +23,14 @@ import { subscribeAllTeams } from '../lib/teams'
 import { remainingMs, useNow } from '../lib/timer'
 
 const panelTransition = {
-  duration: 0.42,
+  duration: 0.28,
   ease: [0.22, 1, 0.36, 1] as const,
 }
 
 const panelMotion = {
-  initial: { opacity: 0, y: 18, scale: 0.96 },
-  animate: { opacity: 1, y: 0, scale: 1 },
-  exit: { opacity: 0, y: -12, scale: 0.98 },
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
   transition: panelTransition,
 }
 
@@ -222,7 +222,7 @@ export function DisplayAll() {
         <StageShell stageScale={stageScale}>
           <div className="dsp-layer">
             <div className="dsp-center">
-              <ScrollPanel variant="status" className="dsp-scroll-compact">
+              <ScrollPanel variant="content" className="dsp-scroll-stage">
                 <p className="dsp-kicker">The Secret Time Loop</p>
                 <h1 className="dsp-title">กำลังเตรียมกระดาน</h1>
                 <div
@@ -271,7 +271,7 @@ export function DisplayAll() {
           {phase === 'lobby' && (
             <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
               <div className="dsp-center">
-                <ScrollPanel variant="status" className="dsp-scroll-status-lg">
+                <ScrollPanel variant="content" className="dsp-scroll-stage">
                   <h1 className="dsp-title dsp-title-hero">รอเริ่มเกม</h1>
                 </ScrollPanel>
                 <Link to="/" className="dsp-back-link">
@@ -288,8 +288,8 @@ export function DisplayAll() {
                   variant="content"
                   className={
                     hasPromptImage
-                      ? 'dsp-scroll-betting dsp-scroll-betting-img'
-                      : 'dsp-scroll-betting'
+                      ? 'dsp-scroll-stage dsp-scroll-betting-img'
+                      : 'dsp-scroll-stage'
                   }
                 >
                   <p className="dsp-heading">วางเดิมพัน</p>
@@ -319,8 +319,8 @@ export function DisplayAll() {
                   variant="content"
                   className={
                     hasPromptImage
-                      ? 'dsp-scroll-question dsp-scroll-question-img'
-                      : 'dsp-scroll-question'
+                      ? 'dsp-scroll-stage dsp-scroll-question-img'
+                      : 'dsp-scroll-stage'
                   }
                 >
                   <p className="dsp-heading">โจทย์</p>
@@ -357,7 +357,7 @@ export function DisplayAll() {
           {phase === 'waiting' && (
             <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
               <div className="dsp-center">
-                <ScrollPanel variant="status" className="dsp-scroll-status-lg">
+                <ScrollPanel variant="content" className="dsp-scroll-stage">
                   <h1 className="dsp-title dsp-title-hero">หมดเวลา</h1>
                   <p className="dsp-answered-count">
                     ตอบแล้ว {answeredCount}/{TEAM_IDS.length} ทีม
@@ -374,8 +374,8 @@ export function DisplayAll() {
                   variant="content"
                   className={
                     hasAnswerImage
-                      ? 'dsp-scroll-reveal dsp-scroll-reveal-img'
-                      : 'dsp-scroll-reveal'
+                      ? 'dsp-scroll-stage dsp-scroll-reveal-img'
+                      : 'dsp-scroll-stage'
                   }
                 >
                   <p className="dsp-heading">เฉลย</p>

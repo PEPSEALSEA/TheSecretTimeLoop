@@ -468,24 +468,18 @@
     color: #3d2414;
   }
 
-  .dsp-scroll-question {
+  .dsp-scroll-stage,
+  .dsp-scroll-question,
+  .dsp-scroll-betting,
+  .dsp-scroll-reveal {
     width: 1920px;
     height: 1080px;
   }
 
-  .dsp-scroll-question .dsp-scroll-body {
-    box-sizing: border-box;
-    justify-content: center;
-    gap: 14px;
-    padding: 72px 280px 80px;
-  }
-
-  .dsp-scroll-betting {
-    width: 1920px;
-    height: 1080px;
-  }
-
-  .dsp-scroll-betting .dsp-scroll-body {
+  .dsp-scroll-stage .dsp-scroll-body,
+  .dsp-scroll-question .dsp-scroll-body,
+  .dsp-scroll-betting .dsp-scroll-body,
+  .dsp-scroll-reveal .dsp-scroll-body {
     box-sizing: border-box;
     justify-content: center;
     gap: 14px;
@@ -599,33 +593,23 @@
     color: #1f6b45;
   }
 
-  .dsp-scroll-reveal {
+  .dsp-scroll-status-lg {
     width: 1920px;
     height: 1080px;
   }
 
-  .dsp-scroll-reveal .dsp-scroll-body {
-    gap: 12px;
-    padding: 72px 280px 80px;
-  }
-
-  .dsp-scroll-status-lg {
-    width: 980px;
-    height: 420px;
-  }
-
   .dsp-scroll-status-lg .dsp-scroll-body {
-    padding: 72px 100px 80px;
+    padding: 72px 280px 80px;
     gap: 18px;
   }
 
   .dsp-scroll-compact {
-    width: 820px;
-    height: 360px;
+    width: 1920px;
+    height: 1080px;
   }
 
   .dsp-scroll-compact .dsp-scroll-body {
-    padding: 64px 88px 72px;
+    padding: 72px 280px 80px;
     gap: 16px;
   }
 

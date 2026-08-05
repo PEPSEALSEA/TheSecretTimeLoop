@@ -30,6 +30,7 @@ import {
 } from '../lib/scoring'
 import {
   ensureAllTeams,
+  resetAllTeams,
   resetTeam,
   setTeamScore,
   subscribeAllTeams,
@@ -139,11 +140,104 @@ export function Admin() {
 
   function confirmResetGame() {
     const ok = window.confirm(
-      'รีเซ็ตเกมทั้งหมด?\n\nสถานะเกมจะกลับไปรอเริ่ม · คะแนนทีมจะไม่ถูกรีเซ็ต',
+      'รีเซ็ตเกม?\n\nสถานะเกมจะกลับไปรอเริ่ม · คะแนนทีมจะไม่ถูกรีเซ็ต',
     )
     if (!ok) return
     void run(resetGame)
   }
+
+  function confirmResetAll() {
+    const ok = window.confirm(
+      'Reset All?\n\nจะรีเซ็ตเกมกลับไปรอเริ่ม และรีเซ็ตคะแนนทุกทีมกลับค่าเริ่มต้น\nการกระทำนี้ยกเลิกไม่ได้',
+    )
+    if (!ok) return
+    void run(async () => {
+      await resetGame()
+      await resetAllTeams(DEFAULT_STARTING_SCORE)
+    })
+  }
+
+  const primaryAction =
+    phase === 'lobby'
+      ? {
+          label: `เริ่มเกม ${ROUND_LABEL} (${TOTAL_QUESTIONS} ข้อ)`,
+          onClick: () => void run(startGame),
+          tone: 'gold' as const,
+        }
+      : phase === 'betting'
+        ? {
+            label: 'เปิดตัวเลือก',
+            onClick: () => void run(openQuestion),
+            tone: 'gold' as const,
+          }
+        : timerPending && game
+          ? {
+              label: `จับเวลา ${question?.durationSec ?? 0}s`,
+              onClick: () => void run(() => startQuestionTimer(game.questionIndex)),
+              tone: 'gold' as const,
+            }
+          : timerRunning
+            ? {
+                label: 'หมดเวลาทันที',
+                onClick: () => void run(lockQuestion),
+                tone: 'sea' as const,
+              }
+            : phase === 'waiting'
+              ? {
+                  label: 'แสดงเฉลย · คิดคะแนนอัตโนมัติ',
+                  onClick: () => void run(showReveal),
+                  tone: 'gold' as const,
+                }
+              : phase === 'reveal'
+                ? {
+                    label: 'ไปกระดานคะแนน',
+                    onClick: () => void run(showScores),
+                    tone: 'gold' as const,
+                  }
+                : phase === 'scores' && game
+                  ? {
+                      label: nextQuestionLabel(game.questionIndex),
+                      onClick: () => void run(() => nextQuestion(game.questionIndex)),
+                      tone: 'gold' as const,
+                    }
+                  : phase === 'finished'
+                    ? {
+                        label: 'เริ่มเกมใหม่',
+                        onClick: confirmResetGame,
+                        tone: 'gold' as const,
+                      }
+                    : null
+
+  const hostActions = (
+    <div className="flex w-full flex-wrap gap-2">
+      <button
+        type="button"
+        disabled={busy || !primaryAction}
+        onClick={primaryAction?.onClick}
+        className={`${
+          primaryAction?.tone === 'sea' ? 'btn-sea' : 'btn-gold'
+        } h-12 min-h-12 w-full flex-1 rounded-xl px-4 text-base font-semibold sm:w-72 sm:flex-none`}
+      >
+        {primaryAction?.label ?? '—'}
+      </button>
+      <button
+        type="button"
+        disabled={busy || phase === 'lobby'}
+        onClick={confirmResetGame}
+        className="btn-sea h-12 min-h-12 w-[7.5rem] shrink-0 rounded-xl px-3 text-sm font-semibold"
+      >
+        รีเซ็ตเกม
+      </button>
+      <button
+        type="button"
+        disabled={busy}
+        onClick={confirmResetAll}
+        className="btn-sea h-12 min-h-12 w-[7.5rem] shrink-0 rounded-xl px-3 text-sm font-semibold"
+      >
+        Reset All
+      </button>
+    </div>
+  )
 
   async function onJumpQuestion() {
     const n = Number(jumpTarget)
@@ -164,111 +258,8 @@ export function Admin() {
     await run(() => jumpToQuestion(index))
   }
 
-  const hostActions = (
-    <>
-      {phase === 'lobby' && (
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => run(startGame)}
-          className="btn-gold min-h-12 flex-1 rounded-xl px-5 py-3 font-semibold sm:flex-none"
-        >
-          เริ่มเกม {ROUND_LABEL} ({TOTAL_QUESTIONS} ข้อ)
-        </button>
-      )}
-
-      {phase === 'betting' && (
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => run(openQuestion)}
-          className="btn-gold min-h-12 flex-1 rounded-xl px-5 py-3 font-semibold sm:flex-none"
-        >
-          เปิดตัวเลือก
-        </button>
-      )}
-
-      {timerPending && game && (
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => run(() => startQuestionTimer(game.questionIndex))}
-          className="btn-gold min-h-12 flex-1 rounded-xl px-5 py-3 font-semibold sm:flex-none"
-        >
-          จับเวลา {question?.durationSec ?? 0}s
-        </button>
-      )}
-
-      {timerRunning && (
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => run(lockQuestion)}
-          className="btn-sea min-h-12 flex-1 rounded-xl px-5 py-3 font-semibold sm:flex-none"
-        >
-          หมดเวลาทันที
-        </button>
-      )}
-
-      {phase === 'waiting' && (
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => run(showReveal)}
-          className="btn-gold min-h-12 flex-1 rounded-xl px-5 py-3 font-semibold sm:flex-none"
-        >
-          แสดงเฉลย · คิดคะแนนอัตโนมัติ
-        </button>
-      )}
-
-      {phase === 'reveal' && (
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => run(showScores)}
-          className="btn-gold min-h-12 flex-1 rounded-xl px-5 py-3 font-semibold sm:flex-none"
-        >
-          ไปกระดานคะแนน
-        </button>
-      )}
-
-      {phase === 'scores' && game && (
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => run(() => nextQuestion(game.questionIndex))}
-          className="btn-gold min-h-12 flex-1 rounded-xl px-5 py-3 font-semibold sm:flex-none"
-        >
-          {nextQuestionLabel(game.questionIndex)}
-        </button>
-      )}
-
-      {phase === 'finished' && (
-        <button
-          type="button"
-          disabled={busy}
-          onClick={confirmResetGame}
-          className="btn-gold min-h-12 flex-1 rounded-xl px-5 py-3 font-semibold sm:flex-none"
-        >
-          เริ่มเกมใหม่
-        </button>
-      )}
-
-      {phase !== 'lobby' && (
-        <button
-          type="button"
-          disabled={busy}
-          onClick={confirmResetGame}
-          className="btn-sea min-h-12 rounded-xl px-4 py-3 text-sm font-semibold"
-        >
-          รีเซ็ตเกม
-        </button>
-      )}
-    </>
-  )
-
   return (
-    <main className="pirate-scene sea-grain mx-auto min-h-dvh max-w-3xl px-4 py-6 pb-28 sm:pb-6">
+    <main className="pirate-scene sea-grain mx-auto min-h-dvh max-w-3xl px-4 py-6 pb-36 sm:pb-6">
       <div className="mb-5 flex items-center justify-between gap-3">
         <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--color-pirate-red)]">
           Host · คุมจอใหญ่
@@ -472,7 +463,7 @@ export function Admin() {
       </motion.section>
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[rgba(42,24,16,0.12)] bg-[rgba(244,228,200,0.96)] px-4 py-3 shadow-[0_-8px_24px_rgba(26,40,60,0.12)] backdrop-blur sm:hidden">
-        <div className="mx-auto flex max-w-3xl flex-wrap gap-2 pr-16">{hostActions}</div>
+        <div className="mx-auto max-w-3xl pr-16">{hostActions}</div>
       </div>
 
       <section className="parchment panel mb-5 rounded-2xl p-5">

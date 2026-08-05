@@ -192,7 +192,7 @@ export function StaffTeam() {
                     type="button"
                     disabled={busy || overBudget}
                     onClick={() => void onPickBet(amount)}
-                    className={`rounded-lg border-2 py-2.5 text-sm font-bold transition ${
+                    className={`h-11 w-full rounded-lg border-2 text-sm font-bold transition ${
                       active
                         ? 'border-[var(--color-gold)] bg-[rgba(240,192,64,0.28)] text-[var(--color-ocean-deep)]'
                         : overBudget
@@ -207,8 +207,8 @@ export function StaffTeam() {
             </div>
           </div>
 
-          {canChoose ? (
-            <>
+          <div className="min-h-[15.5rem]">
+            {canChoose ? (
               <div className="space-y-2">
                 <p className="text-xs font-semibold text-[var(--color-ink-muted)]">ตัวเลือก</p>
                 {question.choices.map((choice) => {
@@ -219,7 +219,7 @@ export function StaffTeam() {
                       type="button"
                       disabled={busy}
                       onClick={() => void onPickChoice(choice.id)}
-                      className={`w-full rounded-xl border-2 px-3 py-2.5 text-left transition ${
+                      className={`h-[3.25rem] w-full rounded-xl border-2 px-3 text-left transition ${
                         active
                           ? 'border-[var(--color-gold)] bg-[rgba(240,192,64,0.28)]'
                           : 'border-[rgba(42,24,16,0.12)] bg-[rgba(255,255,255,0.28)] hover:border-[rgba(26,90,138,0.35)]'
@@ -235,17 +235,18 @@ export function StaffTeam() {
                   )
                 })}
               </div>
+            ) : (
+              <div className="flex h-[15.5rem] items-center justify-center rounded-xl border border-dashed border-[rgba(42,24,16,0.14)] bg-[rgba(255,255,255,0.18)] px-4 text-center text-sm text-[var(--color-ink-muted)]">
+                รอ host เปิดตัวเลือก
+              </div>
+            )}
+          </div>
 
-              <p className="text-center text-xs text-[var(--color-ink-muted)]">
-                เดิมพัน {betTeamsCount}/{TEAM_IDS.length} · ตอบ {answeredTeamsCount}/
-                {TEAM_IDS.length} · แก้ได้จนกว่า host กดแสดงเฉลย
-              </p>
-            </>
-          ) : (
-            <p className="text-center text-xs text-[var(--color-ink-muted)]">
-              เดิมพันแล้ว {betTeamsCount}/{TEAM_IDS.length} ทีม · รอ host เปิดตัวเลือก
-            </p>
-          )}
+          <p className="text-center text-xs text-[var(--color-ink-muted)]">
+            {canChoose
+              ? `เดิมพัน ${betTeamsCount}/${TEAM_IDS.length} · ตอบ ${answeredTeamsCount}/${TEAM_IDS.length} · แก้ได้จนกว่า host กดแสดงเฉลย`
+              : `เดิมพันแล้ว ${betTeamsCount}/${TEAM_IDS.length} ทีม · รอ host เปิดตัวเลือก`}
+          </p>
         </section>
       )}
 

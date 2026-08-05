@@ -10,6 +10,7 @@ import { isCorrectChoice, type ChoiceId, type Question } from './questions'
 import {
   applyRound,
   createInitialTeam,
+  DEFAULT_STARTING_SCORE,
   TEAM_IDS,
   type RoundResult,
   type TeamState,
@@ -67,6 +68,10 @@ export async function resetTeam(
   startingScore: number,
 ): Promise<void> {
   await set(teamRef(teamId), createInitialTeam(teamId, startingScore))
+}
+
+export async function resetAllTeams(startingScore = DEFAULT_STARTING_SCORE): Promise<void> {
+  await Promise.all(TEAM_IDS.map((id) => resetTeam(id, startingScore)))
 }
 
 export async function setTeamScore(
