@@ -32,7 +32,8 @@ export default function App() {
           }
         />
         <Route path="/admin/:teamId" element={<StaffRedirect />} />
-        <Route path="/display/all" element={<DisplayAll />} />
+        <Route path="/display/all" element={<DisplayAll layout="stage" />} />
+        <Route path="/display/other-devices" element={<DisplayAll layout="fluid" />} />
         <Route path="/display/:teamId" element={<Navigate to="/display/all" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -23,13 +23,19 @@ export function Home() {
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.25, duration: 0.4 }}
-          className="mt-7"
+          className="mt-7 flex flex-wrap items-center justify-center gap-3"
         >
           <Link
             to="/display/all"
             className="btn-gold inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-base no-underline md:text-lg"
           >
-            กระดานคะแนนรวม
+            กระดาน TV (1920×1080)
+          </Link>
+          <Link
+            to="/display/other-devices"
+            className="btn-gold inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-base no-underline md:text-lg"
+          >
+            กระดาน iPad / อุปกรณ์อื่น
           </Link>
         </motion.div>
       </motion.header>

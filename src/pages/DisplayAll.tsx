@@ -22,6 +22,8 @@ import { STAGE_H, STAGE_W, useStageScale } from '../lib/stage'
 import { subscribeAllTeams } from '../lib/teams'
 import { remainingMs, useNow } from '../lib/timer'
 
+export type DisplayLayout = 'stage' | 'fluid'
+
 const panelTransition = {
   duration: 0.28,
   ease: [0.22, 1, 0.36, 1] as const,
@@ -115,6 +117,36 @@ function StageShell({
   )
 }
 
+function FluidShell({ children }: { children: ReactNode }) {
+  return (
+    <div className="lb-screen lb-fluid-screen">
+      <div
+        className="lb-stage lb-fluid-stage"
+        style={{
+          backgroundImage: `url(${leaderboardAsset('bg.jpg')})`,
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  )
+}
+
+function DisplayShell({
+  layout,
+  stageScale,
+  children,
+}: {
+  layout: DisplayLayout
+  stageScale: number
+  children: ReactNode
+}) {
+  if (layout === 'fluid') {
+    return <FluidShell>{children}</FluidShell>
+  }
+  return <StageShell stageScale={stageScale}>{children}</StageShell>
+}
+
 function fitPromptClass(text: string): string {
   if (text.length > 150) return 'dsp-prompt dsp-prompt-xs'
   if (text.length > 95) return 'dsp-prompt dsp-prompt-sm'
@@ -135,7 +167,11 @@ function fitExplainClass(text: string, hasAnswerImage: boolean): string {
   return base
 }
 
-export function DisplayAll() {
+type DisplayAllProps = {
+  layout?: DisplayLayout
+}
+
+export function DisplayAll({ layout = 'stage' }: DisplayAllProps) {
   const [game, setGame] = useState<GameState | null>(null)
   const [teams, setTeams] = useState<Record<string, TeamState>>({})
   const [assetsReady, setAssetsReady] = useState(false)
@@ -144,6 +180,7 @@ export function DisplayAll() {
   const prevRankKey = useRef<string | null>(null)
   const ready = useRef(false)
   const stageScale = useStageScale()
+  const isFluid = layout === 'fluid'
 
   useEffect(() => {
     let cancelled = false
@@ -215,11 +252,13 @@ export function DisplayAll() {
     prevRankKey.current = nextRank
   }, [teams, phase])
 
+  const rootClass = isFluid ? 'lb-viewport lb-fluid' : 'lb-viewport'
+
   if (!assetsReady) {
     const pct = Math.round(loadProgress * 100)
     return (
-      <main className="lb-viewport">
-        <StageShell stageScale={stageScale}>
+      <main className={rootClass}>
+        <DisplayShell layout={layout} stageScale={stageScale}>
           <div className="dsp-layer">
             <div className="dsp-center">
               <ScrollPanel variant="content" className="dsp-scroll-stage">
@@ -239,7 +278,7 @@ export function DisplayAll() {
               </ScrollPanel>
             </div>
           </div>
-        </StageShell>
+        </DisplayShell>
       </main>
     )
   }
@@ -261,12 +300,12 @@ export function DisplayAll() {
   const hasPromptImage = Boolean(question?.promptImage)
 
   return (
-    <main className="lb-viewport" onPointerDown={unlockAudio}>
+    <main className={rootClass} onPointerDown={unlockAudio}>
       {timerActive && left > 0 && (
         <GameTimer remainingMs={left} totalMs={totalMs} />
       )}
 
-      <StageShell stageScale={stageScale}>
+      <DisplayShell layout={layout} stageScale={stageScale}>
         <AnimatePresence mode="sync" initial={false}>
           {phase === 'lobby' && (
             <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
@@ -418,7 +457,7 @@ export function DisplayAll() {
             </motion.div>
           )}
         </AnimatePresence>
-      </StageShell>
+      </DisplayShell>
     </main>
   )
 }

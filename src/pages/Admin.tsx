@@ -264,14 +264,24 @@ export function Admin() {
         <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--color-pirate-red)]">
           Host · คุมจอใหญ่
         </p>
-        <Link
-          to="/display/all"
-          className="text-sm text-[var(--color-ink-muted)] no-underline hover:text-[var(--color-ocean)]"
-          target="_blank"
-          rel="noreferrer"
-        >
-          เปิดจอโชว์
-        </Link>
+        <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1">
+          <Link
+            to="/display/all"
+            className="text-sm text-[var(--color-ink-muted)] no-underline hover:text-[var(--color-ocean)]"
+            target="_blank"
+            rel="noreferrer"
+          >
+            จอ TV
+          </Link>
+          <Link
+            to="/display/other-devices"
+            className="text-sm text-[var(--color-ink-muted)] no-underline hover:text-[var(--color-ocean)]"
+            target="_blank"
+            rel="noreferrer"
+          >
+            iPad / อื่นๆ
+          </Link>
+        </div>
       </div>
 
       <motion.section
