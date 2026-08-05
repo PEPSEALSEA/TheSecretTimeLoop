@@ -116,16 +116,23 @@ function StageShell({
 }
 
 function fitPromptClass(text: string): string {
-  if (text.length > 200) return 'dsp-prompt dsp-prompt-xs'
-  if (text.length > 130) return 'dsp-prompt dsp-prompt-sm'
+  if (text.length > 150) return 'dsp-prompt dsp-prompt-xs'
+  if (text.length > 95) return 'dsp-prompt dsp-prompt-sm'
   return 'dsp-prompt'
 }
 
 function fitChoicesClass(choices: { text: string }[]): string {
   const maxLen = Math.max(0, ...choices.map((c) => c.text.length))
-  if (maxLen > 90) return 'dsp-choices dsp-choices-dense'
-  if (maxLen > 45) return 'dsp-choices dsp-choices-md'
+  if (maxLen > 70) return 'dsp-choices dsp-choices-dense'
+  if (maxLen > 36) return 'dsp-choices dsp-choices-md'
   return 'dsp-choices'
+}
+
+function fitExplainClass(text: string, hasAnswerImage: boolean): string {
+  const base = hasAnswerImage ? 'dsp-explain dsp-explain-sm' : 'dsp-explain'
+  if (text.length > 280) return `${base} dsp-explain-xs`
+  if (text.length > 180) return `${base} dsp-explain-md`
+  return base
 }
 
 export function DisplayAll() {
@@ -383,13 +390,7 @@ export function DisplayAll() {
                       decoding="sync"
                     />
                   )}
-                  <p
-                    className={
-                      hasAnswerImage
-                        ? 'dsp-explain dsp-explain-sm'
-                        : 'dsp-explain'
-                    }
-                  >
+                  <p className={fitExplainClass(question.explanation, hasAnswerImage)}>
                     {question.explanation}
                   </p>
                 </ScrollPanel>

@@ -476,8 +476,8 @@
   .dsp-scroll-question .dsp-scroll-body {
     box-sizing: border-box;
     justify-content: center;
-    gap: 10px;
-    padding: 88px 340px 96px;
+    gap: 14px;
+    padding: 72px 280px 80px;
   }
 
   .dsp-scroll-betting {
@@ -488,28 +488,28 @@
   .dsp-scroll-betting .dsp-scroll-body {
     box-sizing: border-box;
     justify-content: center;
-    gap: 12px;
-    padding: 88px 340px 96px;
+    gap: 14px;
+    padding: 72px 280px 80px;
   }
 
   .dsp-scroll-betting-img .dsp-scroll-body {
-    gap: 8px;
-    padding: 140px 340px 100px;
+    gap: 10px;
+    padding: 120px 280px 88px;
     justify-content: flex-start;
   }
 
   .dsp-scroll-betting-img .dsp-heading {
-    margin-top: 8px;
+    margin-top: 4px;
   }
 
   .dsp-scroll-betting-img .dsp-prompt {
-    font-size: 1.85rem;
-    max-width: 36em;
-    margin-top: 8px;
+    font-size: 2.45rem;
+    max-width: none;
+    margin-top: 6px;
   }
 
   .dsp-scroll-betting-img .dsp-prompt-img {
-    max-height: 190px;
+    max-height: 210px;
     margin-top: 8px;
   }
 
@@ -605,7 +605,8 @@
   }
 
   .dsp-scroll-reveal .dsp-scroll-body {
-    padding: 100px 340px 110px;
+    gap: 12px;
+    padding: 72px 280px 80px;
   }
 
   .dsp-scroll-status-lg {
@@ -640,7 +641,7 @@
     margin: 0;
     flex: 0 0 auto;
     font-family: var(--font-display);
-    font-size: 3.1rem;
+    font-size: 2.7rem;
     font-weight: 800;
     line-height: 1;
     color: #3d2414;
@@ -648,43 +649,41 @@
   }
 
   .dsp-round {
-    margin: 4px 0 0;
+    margin: 2px 0 0;
     flex: 0 0 auto;
     font-family: var(--font-display);
-    font-size: 1.75rem;
+    font-size: 1.65rem;
     font-weight: 700;
     line-height: 1.1;
     color: #6b3d1f;
   }
 
   .dsp-prompt {
-    margin: 14px 0 0;
+    margin: 10px 0 0;
     flex: 0 0 auto;
-    max-width: 28em;
+    max-width: none;
     width: 100%;
     font-family: var(--font-display);
-    font-size: 2.65rem;
+    font-size: 3.55rem;
     font-weight: 800;
-    line-height: 1.28;
+    line-height: 1.22;
     color: #3d2414;
   }
 
   .dsp-prompt-sm {
-    font-size: 2.2rem;
-    max-width: 32em;
+    font-size: 2.95rem;
   }
 
   .dsp-prompt-xs {
-    font-size: 1.85rem;
-    max-width: 36em;
-    line-height: 1.26;
+    font-size: 2.45rem;
+    line-height: 1.24;
   }
 
   .dsp-prompt-img {
     display: block;
     width: auto;
-    max-width: min(560px, 72%);
-    max-height: 220px;
+    max-width: min(640px, 78%);
+    max-height: 240px;
     margin: 10px auto 0;
     object-fit: contain;
     border-radius: 0.75rem;
@@ -692,46 +691,46 @@
   }
 
   .dsp-scroll-question-img .dsp-scroll-body {
-    gap: 8px;
-    padding: 130px 340px 100px;
+    gap: 10px;
+    padding: 110px 280px 88px;
     justify-content: flex-start;
   }
 
   .dsp-scroll-question-img .dsp-heading {
-    margin-top: 8px;
+    margin-top: 4px;
   }
 
   .dsp-scroll-question-img .dsp-prompt {
-    font-size: 1.85rem;
-    max-width: 36em;
-    margin-top: 8px;
+    font-size: 2.55rem;
+    max-width: none;
+    margin-top: 6px;
   }
 
   .dsp-scroll-question-img .dsp-prompt-img {
-    max-height: 180px;
+    max-height: 200px;
     margin-top: 8px;
   }
 
   .dsp-scroll-question-img .dsp-choices {
-    margin-top: 10px;
+    margin-top: 12px;
   }
 
   .dsp-scroll-question-img .dsp-choices .dsp-choice-face {
-    min-height: 4.1rem;
+    min-height: 5rem;
   }
 
   .dsp-scroll-question-img .dsp-choices .dsp-choice-text {
-    font-size: 1.1rem;
+    font-size: 1.55rem;
     line-height: 1.2;
   }
 
   .dsp-choices {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 18px 28px;
+    gap: 20px 32px;
     width: 100%;
-    max-width: 1180px;
-    margin-top: 22px;
+    max-width: none;
+    margin-top: 18px;
     flex: 0 0 auto;
     align-content: start;
   }
@@ -754,11 +753,11 @@
   .dsp-choice-face {
     display: flex;
     align-items: center;
-    gap: 0.35rem;
-    min-height: 5.4rem;
+    gap: 0.4rem;
+    min-height: 6.4rem;
     width: 100%;
     box-sizing: border-box;
-    padding: 0.75rem 2.6rem 0.75rem 2.35rem;
+    padding: 0.9rem 2.8rem 0.9rem 2.5rem;
     background:
       radial-gradient(ellipse 120% 90% at 50% 0%, rgba(90, 140, 210, 0.35), transparent 55%),
       linear-gradient(180deg, #1d4f87 0%, #0d335c 48%, #081f3a 100%);
@@ -776,7 +775,7 @@
   .dsp-choice-id {
     flex: 0 0 auto;
     font-family: var(--font-display);
-    font-size: 1.85rem;
+    font-size: 2.35rem;
     font-weight: 800;
     line-height: 1;
     color: #f0c040;
@@ -785,9 +784,9 @@
 
   .dsp-choice-sep {
     flex: 0 0 auto;
-    margin-right: 0.45rem;
+    margin-right: 0.5rem;
     font-family: var(--font-display);
-    font-size: 1.7rem;
+    font-size: 2.15rem;
     font-weight: 700;
     color: #f0c040;
   }
@@ -796,44 +795,44 @@
     flex: 1 1 auto;
     min-width: 0;
     font-family: var(--font-display);
-    font-size: 1.55rem;
+    font-size: 2.05rem;
     font-weight: 700;
-    line-height: 1.25;
+    line-height: 1.22;
     color: #f7f1e4;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
   }
 
   .dsp-choices-md .dsp-choice-face {
-    min-height: 5rem;
-    padding: 0.65rem 2.4rem 0.65rem 2.2rem;
+    min-height: 5.8rem;
+    padding: 0.75rem 2.55rem 0.75rem 2.35rem;
   }
 
   .dsp-choices-md .dsp-choice-id {
-    font-size: 1.65rem;
+    font-size: 2.1rem;
   }
 
   .dsp-choices-md .dsp-choice-text {
-    font-size: 1.28rem;
-    line-height: 1.22;
+    font-size: 1.7rem;
+    line-height: 1.2;
   }
 
   .dsp-choices-dense {
-    gap: 14px 22px;
+    gap: 16px 24px;
   }
 
   .dsp-choices-dense .dsp-choice-face {
-    min-height: 4.6rem;
-    padding: 0.55rem 2.2rem 0.55rem 2rem;
+    min-height: 5.3rem;
+    padding: 0.65rem 2.35rem 0.65rem 2.15rem;
   }
 
   .dsp-choices-dense .dsp-choice-id,
   .dsp-choices-dense .dsp-choice-sep {
-    font-size: 1.4rem;
+    font-size: 1.8rem;
   }
 
   .dsp-choices-dense .dsp-choice-text {
-    font-size: 1.08rem;
-    line-height: 1.2;
+    font-size: 1.45rem;
+    line-height: 1.18;
     font-weight: 600;
   }
 
@@ -843,37 +842,56 @@
   }
 
   .dsp-answer {
-    margin: 20px 0 0;
-    max-width: 22em;
+    margin: 14px 0 0;
+    max-width: none;
+    width: 100%;
     font-family: var(--font-display);
-    font-size: 2.6rem;
+    font-size: 3.5rem;
     font-weight: 800;
-    line-height: 1.2;
+    line-height: 1.18;
     color: #3d2414;
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
   }
 
   .dsp-explain {
-    margin: 18px 0 0;
-    max-width: 30em;
+    margin: 16px 0 0;
+    max-width: none;
+    width: 100%;
     font-family: var(--font-body);
-    font-size: 1.45rem;
+    font-size: 2.4rem;
     font-weight: 600;
-    line-height: 1.4;
+    line-height: 1.35;
     color: #5a3822;
   }
 
   .dsp-explain-sm {
     margin-top: 12px;
-    font-size: 1.15rem;
-    max-width: 34em;
+    font-size: 1.95rem;
+  }
+
+  .dsp-explain-md {
+    font-size: 2.05rem;
+    line-height: 1.32;
+  }
+
+  .dsp-explain-sm.dsp-explain-md {
+    font-size: 1.7rem;
+  }
+
+  .dsp-explain-xs {
+    font-size: 1.75rem;
+    line-height: 1.3;
+  }
+
+  .dsp-explain-sm.dsp-explain-xs {
+    font-size: 1.5rem;
   }
 
   .dsp-answer-img {
     display: block;
     width: auto;
-    max-width: min(720px, 78%);
-    max-height: 280px;
+    max-width: min(820px, 86%);
+    max-height: 320px;
     margin: 14px auto 0;
     object-fit: contain;
     border-radius: 0.75rem;
@@ -886,27 +904,28 @@
   }
 
   .dsp-scroll-reveal-img .dsp-scroll-body {
-    gap: 8px;
-    padding: 140px 340px 110px;
+    gap: 10px;
+    padding: 110px 280px 88px;
     justify-content: flex-start;
   }
 
   .dsp-scroll-reveal-img .dsp-heading {
-    margin-top: 8px;
+    margin-top: 4px;
   }
 
   .dsp-scroll-reveal-img .dsp-answer {
-    margin-top: 12px;
-    font-size: 2.35rem;
+    margin-top: 10px;
+    font-size: 3rem;
   }
 
   .dsp-scroll-reveal-img .dsp-answer-img {
-    max-height: 240px;
+    max-height: 280px;
     margin-top: 10px;
   }
 
   .dsp-scroll-reveal-img .dsp-explain-sm {
     margin-top: 10px;
+    font-size: 1.85rem;
   }
 
   .dsp-title {
