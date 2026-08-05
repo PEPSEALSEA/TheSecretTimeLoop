@@ -164,8 +164,111 @@ export function Admin() {
     await run(() => jumpToQuestion(index))
   }
 
+  const hostActions = (
+    <>
+      {phase === 'lobby' && (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => run(startGame)}
+          className="btn-gold min-h-12 flex-1 rounded-xl px-5 py-3 font-semibold sm:flex-none"
+        >
+          เริ่มเกม {ROUND_LABEL} ({TOTAL_QUESTIONS} ข้อ)
+        </button>
+      )}
+
+      {phase === 'betting' && (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => run(openQuestion)}
+          className="btn-gold min-h-12 flex-1 rounded-xl px-5 py-3 font-semibold sm:flex-none"
+        >
+          เปิดตัวเลือก
+        </button>
+      )}
+
+      {timerPending && game && (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => run(() => startQuestionTimer(game.questionIndex))}
+          className="btn-gold min-h-12 flex-1 rounded-xl px-5 py-3 font-semibold sm:flex-none"
+        >
+          จับเวลา {question?.durationSec ?? 0}s
+        </button>
+      )}
+
+      {timerRunning && (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => run(lockQuestion)}
+          className="btn-sea min-h-12 flex-1 rounded-xl px-5 py-3 font-semibold sm:flex-none"
+        >
+          หมดเวลาทันที
+        </button>
+      )}
+
+      {phase === 'waiting' && (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => run(showReveal)}
+          className="btn-gold min-h-12 flex-1 rounded-xl px-5 py-3 font-semibold sm:flex-none"
+        >
+          แสดงเฉลย · คิดคะแนนอัตโนมัติ
+        </button>
+      )}
+
+      {phase === 'reveal' && (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => run(showScores)}
+          className="btn-gold min-h-12 flex-1 rounded-xl px-5 py-3 font-semibold sm:flex-none"
+        >
+          ไปกระดานคะแนน
+        </button>
+      )}
+
+      {phase === 'scores' && game && (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => run(() => nextQuestion(game.questionIndex))}
+          className="btn-gold min-h-12 flex-1 rounded-xl px-5 py-3 font-semibold sm:flex-none"
+        >
+          {nextQuestionLabel(game.questionIndex)}
+        </button>
+      )}
+
+      {phase === 'finished' && (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={confirmResetGame}
+          className="btn-gold min-h-12 flex-1 rounded-xl px-5 py-3 font-semibold sm:flex-none"
+        >
+          เริ่มเกมใหม่
+        </button>
+      )}
+
+      {phase !== 'lobby' && (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={confirmResetGame}
+          className="btn-sea min-h-12 rounded-xl px-4 py-3 text-sm font-semibold"
+        >
+          รีเซ็ตเกม
+        </button>
+      )}
+    </>
+  )
+
   return (
-    <main className="pirate-scene sea-grain mx-auto min-h-dvh max-w-3xl px-4 py-6">
+    <main className="pirate-scene sea-grain mx-auto min-h-dvh max-w-3xl px-4 py-6 pb-28 sm:pb-6">
       <div className="mb-5 flex items-center justify-between gap-3">
         <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--color-pirate-red)]">
           Host · คุมจอใหญ่
@@ -216,6 +319,14 @@ export function Admin() {
               </p>
             </div>
           )}
+          {timerPending && (
+            <div className="rounded-xl bg-[rgba(240,192,64,0.28)] px-4 py-2 text-center">
+              <p className="text-[0.65rem] font-bold uppercase tracking-[0.24em] text-[var(--color-ink-muted)]">
+                ตัวจับเวลา
+              </p>
+              <p className="font-score text-lg text-[var(--color-ocean-deep)]">ยังไม่เริ่ม</p>
+            </div>
+          )}
           {timerRunning && (
             <div className="rounded-xl bg-[rgba(255,255,255,0.4)] px-4 py-2 text-center">
               <p className="text-[0.65rem] font-bold uppercase tracking-[0.24em] text-[var(--color-ink-muted)]">
@@ -257,6 +368,8 @@ export function Admin() {
             </div>
           )}
         </div>
+
+        <div className="mt-4 hidden flex-wrap gap-2 sm:flex">{hostActions}</div>
 
         {question &&
           (phase === 'betting' ||
@@ -356,108 +469,11 @@ export function Admin() {
             })}
           </div>
         )}
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          {phase === 'lobby' && (
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => run(startGame)}
-              className="btn-gold rounded-xl px-5 py-3 font-semibold"
-            >
-              เริ่มเกม {ROUND_LABEL} ({TOTAL_QUESTIONS} ข้อ)
-            </button>
-          )}
-
-          {phase === 'betting' && (
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => run(openQuestion)}
-              className="btn-gold rounded-xl px-5 py-3 font-semibold"
-            >
-              เปิดตัวเลือก
-            </button>
-          )}
-
-          {timerPending && game && (
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => run(() => startQuestionTimer(game.questionIndex))}
-              className="btn-gold rounded-xl px-5 py-3 font-semibold"
-            >
-              จับเวลา {question?.durationSec ?? 0}s
-            </button>
-          )}
-
-          {timerRunning && (
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => run(lockQuestion)}
-              className="btn-sea rounded-xl px-5 py-3 font-semibold"
-            >
-              หมดเวลาทันที
-            </button>
-          )}
-
-          {phase === 'waiting' && (
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => run(showReveal)}
-              className="btn-gold rounded-xl px-5 py-3 font-semibold"
-            >
-              แสดงเฉลย · คิดคะแนนอัตโนมัติ
-            </button>
-          )}
-
-          {phase === 'reveal' && (
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => run(showScores)}
-              className="btn-gold rounded-xl px-5 py-3 font-semibold"
-            >
-              ไปกระดานคะแนน
-            </button>
-          )}
-
-          {phase === 'scores' && game && (
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => run(() => nextQuestion(game.questionIndex))}
-              className="btn-gold rounded-xl px-5 py-3 font-semibold"
-            >
-              {nextQuestionLabel(game.questionIndex)}
-            </button>
-          )}
-
-          {phase === 'finished' && (
-            <button
-              type="button"
-              disabled={busy}
-              onClick={confirmResetGame}
-              className="btn-gold rounded-xl px-5 py-3 font-semibold"
-            >
-              เริ่มเกมใหม่
-            </button>
-          )}
-
-          {phase !== 'lobby' && (
-            <button
-              type="button"
-              disabled={busy}
-              onClick={confirmResetGame}
-              className="btn-sea rounded-xl px-4 py-3 text-sm font-semibold"
-            >
-              รีเซ็ตเกม
-            </button>
-          )}
-        </div>
       </motion.section>
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[rgba(42,24,16,0.12)] bg-[rgba(244,228,200,0.96)] px-4 py-3 shadow-[0_-8px_24px_rgba(26,40,60,0.12)] backdrop-blur sm:hidden">
+        <div className="mx-auto flex max-w-3xl flex-wrap gap-2 pr-16">{hostActions}</div>
+      </div>
 
       <section className="parchment panel mb-5 rounded-2xl p-5">
         <h2 className="font-display text-lg text-[var(--color-ocean-deep)]">
