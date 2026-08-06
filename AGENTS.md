@@ -1,5 +1,34 @@
 # AGENTS.md
 
+## Cursor Cloud specific instructions
+
+Cloud Agents use `.cursor/environment.json` (install + Vite terminal on port 5173).
+
+### Local verification in the VM
+
+```bash
+npm run lint
+npm run build
+npm run dev -- --host 0.0.0.0 --port 5173
+```
+
+App URL: `http://localhost:5173/` (dev `base` is `/`).
+
+### Secrets (Dashboard → Cloud Agents → Secrets)
+
+Add these so admin routes and Firebase work in the cloud VM:
+
+| Secret | Purpose |
+|---|---|
+| `VITE_FIREBASE_API_KEY` | Firebase web API key |
+| `VITE_ADMIN_PASSWORD` | Password for `/admin` and staff gates |
+
+Do not commit `.env` or real secret values. Client Firebase config in `src/lib/firebaseConfig.ts` is OK.
+
+### Deploy from Cloud Agents
+
+Follow the checklist below. Prefer pushing to `main` so GitHub Actions deploys Hosting + Pages. For RTDB rules/config changes only, use the Firebase database deploy command in step 4. Manual Firebase hosting deploy is optional if Actions already ran.
+
 ## After finishing work (always)
 
 Before you stop on any meaningful change, do this checklist in order:

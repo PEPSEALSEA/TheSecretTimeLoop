@@ -1,0 +1,16 @@
+{
+  "install": "npm ci || npm install",
+  "terminals": [
+    {
+      "name": "Vite",
+      "command": "npm run dev -- --host 0.0.0.0 --port 5173",
+      "description": "Vite + React dev server for The Secret Time Loop (http://localhost:5173/)"
+    }
+  ],
+  "ports": [
+    {
+      "name": "Vite",
+      "port": 5173
+    }
+  ]
+}
