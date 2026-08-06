@@ -19,9 +19,22 @@ function computeRanks(teams: Record<string, TeamState>): Record<string, number> 
   })
   const ranks: Record<string, number> = {}
   ordered.forEach((id, index) => {
-    ranks[id] = index + 1
+    if (index === 0) {
+      ranks[id] = 1
+      return
+    }
+    const prevId = ordered[index - 1]
+    const score = teams[id]?.score ?? Number.NEGATIVE_INFINITY
+    const prevScore = teams[prevId]?.score ?? Number.NEGATIVE_INFINITY
+    ranks[id] = score === prevScore ? ranks[prevId] : index + 1
   })
   return ranks
+}
+
+function nameSizeClass(name: string): string {
+  if (name.length > 14) return 'lb-card-name lb-card-name-long'
+  if (name.length > 9) return 'lb-card-name lb-card-name-md'
+  return 'lb-card-name'
 }
 
 export function TeamGrid({ teams, scoredTeams = {} }: Props) {
@@ -60,6 +73,7 @@ export function TeamGrid({ teams, scoredTeams = {} }: Props) {
         const isFlash = Boolean(flashed[id])
         const isScored = Boolean(scoredTeams[id])
         const rank = ranks[id]
+        const name = getTeamName(id)
         const scoreLabel = team ? `${formatScore(team.score)} คะแนน` : '— คะแนน'
 
         return (
@@ -79,7 +93,7 @@ export function TeamGrid({ teams, scoredTeams = {} }: Props) {
             />
             <div className="lb-card-body">
               <span className="lb-card-rank">#{rank}</span>
-              <p className="lb-card-name">{getTeamName(id)}</p>
+              <p className={nameSizeClass(name)}>{name}</p>
               <p className={`lb-card-score ${isScored ? 'lb-card-score-scored' : ''}`}>
                 {scoreLabel}
               </p>
