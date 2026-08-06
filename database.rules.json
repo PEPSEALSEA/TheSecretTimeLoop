@@ -11,6 +11,13 @@
     "game": {
       ".read": true,
       ".write": true
+    },
+    "presence": {
+      ".read": true,
+      "$sessionId": {
+        ".write": true,
+        ".validate": "newData.hasChildren(['at', 'path', 'role']) && newData.child('at').isNumber() && newData.child('path').isString() && newData.child('role').isString()"
+      }
     }
   }
 }

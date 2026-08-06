@@ -38,6 +38,16 @@ import {
   subscribeAllTeams,
 } from '../lib/teams'
 import { remainingMs, useNow } from '../lib/timer'
+import {
+  FIREBASE_USAGE_URL,
+  SPARK_DOWNLOAD_GB_PER_MONTH,
+  SPARK_DOWNLOAD_MB_PER_DAY,
+  SPARK_MAX_CONNECTIONS,
+  SPARK_STORAGE_GB,
+  countPresenceByRole,
+  subscribePresence,
+  type PresenceEntry,
+} from '../lib/presence'
 
 const phaseLabel: Record<string, string> = {
   lobby: 'รอเริ่ม',
@@ -60,6 +70,7 @@ export function Admin() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [jumpTarget, setJumpTarget] = useState('1')
+  const [presence, setPresence] = useState<Record<string, PresenceEntry>>({})
   const lastScores = useRef<Record<string, number>>({})
   const busyRef = useRef(false)
   const lockAttemptEndsAt = useRef<number | null>(null)
@@ -69,6 +80,7 @@ export function Admin() {
     void ensureAllTeams().catch((e) => setError(String(e)))
     return subscribeAllTeams(setTeams)
   }, [])
+  useEffect(() => subscribePresence(setPresence), [])
 
   useEffect(() => {
     setScoreDrafts((prev) => {
@@ -108,6 +120,12 @@ export function Admin() {
   const doneCount = game ? scoredCount(game) : 0
   const answeredTeamsCount = game ? answeredCount(game) : 0
   const betTeamsCount = game ? betCount(game) : 0
+  const liveConnections = Object.keys(presence).length
+  const presenceByRole = countPresenceByRole(presence)
+  const connectionPct = Math.min(
+    100,
+    Math.round((liveConnections / SPARK_MAX_CONNECTIONS) * 100),
+  )
   const statusLabel =
     phase === 'question'
       ? timerRunning
@@ -296,6 +314,58 @@ export function Admin() {
           </Link>
         </div>
       </div>
+
+      <motion.section
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="parchment panel mb-5 rounded-2xl p-5"
+      >
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--color-ink-muted)]">
+              Firebase Spark · โควต้า
+            </p>
+            <h2 className="font-display mt-1 text-2xl text-[var(--color-ocean-deep)]">
+              {liveConnections}/{SPARK_MAX_CONNECTIONS} connections
+            </h2>
+            <p className="mt-1 text-sm text-[var(--color-ink-muted)]">
+              ใช้ไปประมาณ {connectionPct}% ของขีดจำกัดพร้อมกัน
+            </p>
+          </div>
+          <a
+            href={FIREBASE_USAGE_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-xl bg-[rgba(255,255,255,0.4)] px-4 py-2 text-sm font-semibold text-[var(--color-ocean-deep)] no-underline hover:bg-[rgba(255,255,255,0.6)]"
+          >
+            ดู usage จริงใน Console
+          </a>
+        </div>
+
+        <div className="mt-4 h-2 overflow-hidden rounded-full bg-[rgba(61,36,20,0.12)]">
+          <div
+            className="h-full rounded-full bg-[var(--color-ocean)] transition-[width] duration-300"
+            style={{ width: `${connectionPct}%` }}
+          />
+        </div>
+
+        <div className="mt-4 grid gap-2 text-sm text-[var(--color-ink-muted)] sm:grid-cols-2">
+          <p>
+            ตอนนี้ · admin {presenceByRole.admin ?? 0} · staff {presenceByRole.staff ?? 0} ·
+            display {presenceByRole.display ?? 0}
+            {(presenceByRole.other ?? 0) > 0 ? ` · other ${presenceByRole.other}` : ''}
+          </p>
+          <p>
+            ดาวน์โหลดฟรี ~{SPARK_DOWNLOAD_MB_PER_DAY} MB/วัน · {SPARK_DOWNLOAD_GB_PER_MONTH}{' '}
+            GB/เดือน · เก็บข้อมูล {SPARK_STORAGE_GB} GB
+          </p>
+        </div>
+
+        <p className="mt-3 text-sm text-[var(--color-ocean-deep)]">
+          เปิดพร้อมกัน ~20 คน (ประมาณ 20–40 แท็บ) อยู่ภายใต้ลิมิต 100 connections สบายๆ
+          RTDB ไม่คิดเป็น request แบบ Firestore — ดู bandwidth รายวันจากปุ่ม Console ด้านบน
+        </p>
+      </motion.section>
 
       <motion.section
         initial={{ opacity: 0, y: 10 }}
