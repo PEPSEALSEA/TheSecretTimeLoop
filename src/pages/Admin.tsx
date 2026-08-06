@@ -56,7 +56,7 @@ const phaseLabel: Record<string, string> = {
   waiting: 'หมดเวลา · รอเปิดเฉลย',
   revealVideo: 'วิดีโอเฉลย',
   reveal: 'แสดงเฉลย',
-  scores: 'คะแนนอัปเดตแล้ว',
+  scores: 'ทองอัปเดตแล้ว',
   finished: 'จบเกม',
 }
 
@@ -164,7 +164,7 @@ export function Admin() {
   async function onSetScore(teamId: string) {
     const score = Number(scoreDrafts[teamId])
     if (!Number.isFinite(score) || score < 0) {
-      setError(`ทีม ${teamId}: คะแนนที่ตั้งไม่ถูกต้อง`)
+      setError(`ทีม ${teamId}: ทองที่ตั้งไม่ถูกต้อง`)
       return
     }
     await run(() => setTeamScore(teamId, score).then(() => undefined))
@@ -173,7 +173,7 @@ export function Admin() {
   async function onResetTeam(teamId: string) {
     const start = Number(resetDrafts[teamId] ?? DEFAULT_STARTING_SCORE)
     if (!Number.isFinite(start) || start < 0) {
-      setError(`ทีม ${teamId}: คะแนนเริ่มต้นไม่ถูกต้อง`)
+      setError(`ทีม ${teamId}: ทองเริ่มต้นไม่ถูกต้อง`)
       return
     }
     await run(() => resetTeam(teamId, start))
@@ -181,7 +181,7 @@ export function Admin() {
 
   function confirmResetAll() {
     const ok = window.confirm(
-      'Reset All?\n\nจะล้างทุกอย่าง: สถานะเกม · ตัวจับเวลา · คำตอบ · เดิมพัน · คะแนนและประวัติทุกทีม\nกลับไปรอเริ่มด้วยคะแนนเริ่มต้น\nการกระทำนี้ยกเลิกไม่ได้',
+      'Reset All?\n\nจะล้างทุกอย่าง: สถานะเกม · ตัวจับเวลา · คำตอบ · เดิมพัน · ทองและประวัติทุกทีม\nกลับไปรอเริ่มด้วยทองเริ่มต้น\nการกระทำนี้ยกเลิกไม่ได้',
     )
     if (!ok) return
     lockAttemptEndsAt.current = null
@@ -216,8 +216,8 @@ export function Admin() {
             : phase === 'waiting'
               ? {
                   label: question?.answerVideo
-                    ? 'แสดงวิดีโอเฉลย · คิดคะแนนอัตโนมัติ'
-                    : 'แสดงเฉลย · คิดคะแนนอัตโนมัติ',
+                    ? 'แสดงวิดีโอเฉลย · คิดทองอัตโนมัติ'
+                    : 'แสดงเฉลย · คิดทองอัตโนมัติ',
                   onClick: () => void run(showReveal),
                   tone: 'gold' as const,
                 }
@@ -229,7 +229,7 @@ export function Admin() {
                   }
                 : phase === 'reveal'
                   ? {
-                      label: 'ไปกระดานคะแนน',
+                      label: 'ไปกระดานทอง',
                       onClick: () => void run(showScores),
                       tone: 'gold' as const,
                     }
@@ -444,7 +444,7 @@ export function Admin() {
           {phase === 'scores' && (
             <div className="rounded-xl bg-[rgba(255,255,255,0.4)] px-4 py-2 text-center">
               <p className="text-[0.65rem] font-bold uppercase tracking-[0.24em] text-[var(--color-ink-muted)]">
-                คิดคะแนนแล้ว
+                คิดทองแล้ว
               </p>
               <p className="font-score text-2xl text-[var(--color-ocean-deep)]">
                 {doneCount}/{TEAM_IDS.length}
@@ -584,7 +584,7 @@ export function Admin() {
           ข้ามไปข้อ
         </h2>
         <p className="mt-1 text-sm text-[var(--color-ink-muted)]">
-          กระโดดไปหน้าวางเดิมพันของข้อที่เลือก · ไม่คิดคะแนนรอบปัจจุบัน
+          กระโดดไปหน้าวางเดิมพันของข้อที่เลือก · ไม่คิดทองรอบปัจจุบัน
         </p>
         <div className="mt-4 flex flex-wrap items-end gap-2">
           <label className="min-w-[10rem] flex-1">
@@ -617,10 +617,10 @@ export function Admin() {
 
       <section className="parchment panel rounded-2xl p-5">
         <h2 className="font-display text-lg text-[var(--color-ocean-deep)]">
-          ตั้งคะแนน / รีเซ็ตทีม
+          ตั้งทอง / รีเซ็ตทีม
         </h2>
         <p className="mt-1 text-sm text-[var(--color-ink-muted)]">
-          แก้คะแนนทีมตรงๆ หรือรีเซ็ตกลับค่าเริ่มต้น (ค่าเริ่มต้น {DEFAULT_STARTING_SCORE})
+          แก้ทองทีมตรงๆ หรือรีเซ็ตกลับค่าเริ่มต้น (ค่าเริ่มต้น {DEFAULT_STARTING_SCORE})
         </p>
         <div className="mt-4 space-y-3">
           {TEAM_IDS.map((id) => {
@@ -647,7 +647,7 @@ export function Admin() {
                       setScoreDrafts((d) => ({ ...d, [id]: e.target.value }))
                     }
                     className="input-field min-w-0 flex-1 py-2 text-base"
-                    placeholder="คะแนน"
+                    placeholder="ทอง"
                   />
                   <button
                     type="button"
@@ -655,7 +655,7 @@ export function Admin() {
                     onClick={() => void onSetScore(id)}
                     className="btn-ocean rounded-lg px-3 py-2 text-sm font-semibold"
                   >
-                    ตั้งคะแนน
+                    ตั้งทอง
                   </button>
                   <input
                     type="number"

@@ -81,7 +81,7 @@ export function StaffTeam() {
   async function onPickBet(amount: number) {
     if (!canBet) return
     if (team && amount > team.score) {
-      setError('เดิมพันมากกว่าคะแนนปัจจุบัน')
+      setError('เดิมพันมากกว่าทองปัจจุบัน')
       return
     }
     unlockAudio()
@@ -97,7 +97,7 @@ export function StaffTeam() {
   }
 
   const statusText = canScore
-    ? 'คะแนนอัปเดตแล้ว · รอข้อต่อไป'
+    ? 'ทองอัปเดตแล้ว · รอข้อต่อไป'
     : phase === 'betting'
       ? selectedBet != null
         ? `เดิมพัน ${formatScore(selectedBet)} · รอเปิดตัวเลือก`
@@ -111,7 +111,7 @@ export function StaffTeam() {
               ? `เดิมพัน ${formatScore(selectedBet)} · เลือกคำตอบ`
               : 'เลือกคำตอบ + วางเดิมพัน'
         : phase === 'reveal' || phase === 'revealVideo'
-          ? 'คะแนนอัปเดตอัตโนมัติ · รอเปิดกระดาน'
+          ? 'ทองอัปเดตอัตโนมัติ · รอเปิดกระดาน'
           : 'รอเริ่ม'
 
   return (
@@ -158,7 +158,7 @@ export function StaffTeam() {
         className="parchment panel mb-3 rounded-xl p-4 text-center"
       >
         <p className="text-[0.65rem] font-bold uppercase tracking-[0.35em] text-[var(--color-ink-muted)]">
-          คะแนนทีมนี้
+          ทองทีมนี้
         </p>
         <h1 className="font-display mt-1 text-2xl text-[var(--color-ocean-deep)]">
           {getTeamName(teamId)}
@@ -271,12 +271,12 @@ export function StaffTeam() {
       {(phase === 'reveal' || phase === 'revealVideo') && (
         <section className="parchment panel mb-3 rounded-xl p-4">
           <p className="font-display text-lg text-[var(--color-ocean-deep)]">
-            คะแนนอัปเดตแล้ว
+            ทองอัปเดตแล้ว
           </p>
           <p className="mt-1 text-sm text-[var(--color-ink-muted)]">
             {phase === 'revealVideo'
               ? 'กำลังเล่นวิดีโอเฉลยบนจอใหญ่ · รอ host เปิดเฉลยข้อความ'
-              : 'รอ host เปิดกระดานคะแนน · ดูเฉลยที่จอใหญ่เท่านั้น'}
+              : 'รอ host เปิดกระดานทอง · ดูเฉลยที่จอใหญ่เท่านั้น'}
           </p>
         </section>
       )}
@@ -284,10 +284,10 @@ export function StaffTeam() {
       {canScore ? (
         <section className="parchment panel mb-3 rounded-xl p-4">
           <p className="font-display text-lg text-[var(--color-ocean-deep)]">
-            คิดคะแนนอัตโนมัติแล้ว
+            คิดทองอัตโนมัติแล้ว
           </p>
           <p className="mt-1 text-sm text-[var(--color-ink-muted)]">
-            รอ host เปิดข้อต่อไป · ถ้าต้องแก้คะแนนให้แก้ที่หน้า admin
+            รอ host เปิดข้อต่อไป · ถ้าต้องแก้ทองให้แก้ที่หน้า admin
           </p>
         </section>
       ) : (

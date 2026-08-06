@@ -59,7 +59,7 @@ export function AdminGate({ children }: Props) {
             เข้าสู่ระบบแอดมิน
           </h1>
           <p className="mt-2 text-sm text-[var(--color-ink-muted)]">
-            หน้านี้ไม่แสดงบนหน้าปกติ — ต้องมีรหัสผ่านเพื่อแก้คะแนน
+            หน้านี้ไม่แสดงบนหน้าปกติ — ต้องมีรหัสผ่านเพื่อแก้ทอง
           </p>
 
           <form onSubmit={onSubmit} className="mt-6 space-y-4">

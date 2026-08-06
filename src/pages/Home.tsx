@@ -14,10 +14,10 @@ export function Home() {
           The Secret Time Loop
         </p>
         <h1 className="font-display title-glow text-[clamp(2.2rem,7vw,4.2rem)] leading-[1.08]">
-          กระดานคะแนนสมรภูมิโจรสลัด
+          กระดานทองสมรภูมิโจรสลัด
         </h1>
         <p className="mx-auto mt-4 max-w-lg text-base leading-relaxed text-[var(--color-ink-muted)] md:text-lg">
-          เปิดบนทีวีเพื่อดูคะแนนทุกทีมแบบเรียลไทม์
+          เปิดบนทีวีเพื่อดูทองทุกทีมแบบเรียลไทม์
         </p>
         <motion.div
           initial={{ opacity: 0, scale: 0.96 }}

@@ -74,7 +74,7 @@ export function TeamGrid({ teams, scoredTeams = {} }: Props) {
         const isScored = Boolean(scoredTeams[id])
         const rank = ranks[id]
         const name = getTeamName(id)
-        const scoreLabel = team ? `${formatScore(team.score)} คะแนน` : '— คะแนน'
+        const scoreLabel = team ? `${formatScore(team.score)} ทอง` : '— ทอง'
 
         return (
           <motion.article
