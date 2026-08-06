@@ -23,6 +23,7 @@ import {
 } from '../lib/scoring'
 import { unlockAudio } from '../lib/sounds'
 import { ensureTeam, subscribeTeam } from '../lib/teams'
+import { useNow } from '../lib/timer'
 
 export function StaffTeam() {
   const { teamId = '' } = useParams()
@@ -44,7 +45,10 @@ export function StaffTeam() {
     }
   }, [teamId, valid])
 
-  const phase = game ? effectivePhase(game) : 'lobby'
+  const clockActive =
+    game != null && game.phase !== 'lobby' && game.phase !== 'finished'
+  const now = useNow(clockActive)
+  const phase = game ? effectivePhase(game, now) : 'lobby'
   const canBet =
     phase === 'betting' || phase === 'question' || phase === 'waiting'
   const canChoose = phase === 'question' || phase === 'waiting'

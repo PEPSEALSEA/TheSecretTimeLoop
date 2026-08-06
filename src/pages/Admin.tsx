@@ -6,6 +6,7 @@ import {
   betCount,
   effectivePhase,
   jumpToQuestion,
+  lockExpiredQuestion,
   lockQuestion,
   nextQuestion,
   nextQuestionLabel,
@@ -60,6 +61,8 @@ export function Admin() {
   const [error, setError] = useState<string | null>(null)
   const [jumpTarget, setJumpTarget] = useState('1')
   const lastScores = useRef<Record<string, number>>({})
+  const busyRef = useRef(false)
+  const lockAttemptEndsAt = useRef<number | null>(null)
 
   useEffect(() => subscribeGame(setGame), [])
   useEffect(() => {
@@ -112,7 +115,22 @@ export function Admin() {
         : 'แสดงตัวเลือก · รอจับเวลา'
       : (phaseLabel[phase] ?? phase)
 
+  useEffect(() => {
+    if (
+      game?.phase !== 'question' ||
+      game.endsAt == null ||
+      now < game.endsAt
+    ) {
+      return
+    }
+    if (lockAttemptEndsAt.current === game.endsAt) return
+    lockAttemptEndsAt.current = game.endsAt
+    void lockExpiredQuestion(now)
+  }, [game, now])
+
   async function run(action: () => Promise<void>) {
+    if (busyRef.current) return
+    busyRef.current = true
     setBusy(true)
     setError(null)
     try {
@@ -120,6 +138,7 @@ export function Admin() {
     } catch (err) {
       setError(String(err))
     } finally {
+      busyRef.current = false
       setBusy(false)
     }
   }
@@ -221,14 +240,14 @@ export function Admin() {
                       : null
 
   const hostActions = (
-    <div className="flex w-full flex-wrap gap-2">
+    <div className="flex w-full flex-wrap gap-2 [touch-action:manipulation]">
       <button
         type="button"
         disabled={busy || !primaryAction}
         onClick={primaryAction?.onClick}
         className={`${
           primaryAction?.tone === 'sea' ? 'btn-sea' : 'btn-gold'
-        } h-12 min-h-12 w-full flex-1 rounded-xl px-4 text-base font-semibold sm:w-72 sm:flex-none`}
+        } h-12 min-h-12 w-full flex-1 touch-manipulation rounded-xl px-4 text-base font-semibold sm:w-72 sm:flex-none`}
       >
         {primaryAction?.label ?? '—'}
       </button>
@@ -236,7 +255,7 @@ export function Admin() {
         type="button"
         disabled={busy || phase === 'lobby'}
         onClick={confirmResetGame}
-        className="btn-sea h-12 min-h-12 w-[7.5rem] shrink-0 rounded-xl px-3 text-sm font-semibold"
+        className="btn-sea h-12 min-h-12 w-[7.5rem] shrink-0 touch-manipulation rounded-xl px-3 text-sm font-semibold"
       >
         รีเซ็ตเกม
       </button>
@@ -244,7 +263,7 @@ export function Admin() {
         type="button"
         disabled={busy}
         onClick={confirmResetAll}
-        className="btn-sea h-12 min-h-12 w-[7.5rem] shrink-0 rounded-xl px-3 text-sm font-semibold"
+        className="btn-sea h-12 min-h-12 w-[7.5rem] shrink-0 touch-manipulation rounded-xl px-3 text-sm font-semibold"
       >
         Reset All
       </button>

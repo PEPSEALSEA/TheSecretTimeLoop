@@ -1,8 +1,16 @@
-import { get, onValue, ref, set, update, type Unsubscribe } from 'firebase/database'
+import {
+  onValue,
+  ref,
+  runTransaction,
+  set,
+  update,
+  type Unsubscribe,
+} from 'firebase/database'
 import { db } from './firebase'
 import { getQuestion, QUESTIONS, type ChoiceId } from './questions'
 import { BET_OPTIONS, TEAM_IDS } from './scoring'
 import { applyAllTeamRoundScores } from './teams'
+import { serverNow } from './timer'
 
 export type GamePhase =
   | 'lobby'
@@ -104,6 +112,16 @@ function normalizeGame(raw: unknown): GameState {
   }
 }
 
+function allTeamsScored(scoredTeams: Record<string, boolean>): boolean {
+  return TEAM_IDS.every((id) => Boolean(scoredTeams[id]))
+}
+
+function fullScoredTeams(): Record<string, boolean> {
+  const scoredTeams: Record<string, boolean> = {}
+  for (const id of TEAM_IDS) scoredTeams[id] = true
+  return scoredTeams
+}
+
 export function answeredCount(game: GameState): number {
   return TEAM_IDS.filter((id) => Boolean(game.teamChoices[id])).length
 }
@@ -133,7 +151,7 @@ export function scoredCount(game: GameState): number {
   return TEAM_IDS.filter((id) => game.scoredTeams[id]).length
 }
 
-export function effectivePhase(game: GameState, now = Date.now()): GamePhase {
+export function effectivePhase(game: GameState, now = serverNow()): GamePhase {
   if (game.phase === 'question' && game.endsAt != null && now >= game.endsAt) {
     return 'waiting'
   }
@@ -172,25 +190,78 @@ export async function startQuestionTimer(questionIndex: number): Promise<void> {
   if (!q) return
   await update(gameRef(), {
     phase: 'question',
-    endsAt: Date.now() + q.durationSec * 1000,
+    endsAt: serverNow() + q.durationSec * 1000,
   })
 }
 
 export async function lockQuestion(): Promise<void> {
-  await update(gameRef(), { phase: 'waiting', endsAt: Date.now() })
+  await update(gameRef(), { phase: 'waiting', endsAt: serverNow() })
+}
+
+export async function lockExpiredQuestion(now = serverNow()): Promise<boolean> {
+  const result = await runTransaction(gameRef(), (raw) => {
+    if (raw == null) return raw
+    const game = normalizeGame(raw)
+    if (game.phase !== 'question' || game.endsAt == null || now < game.endsAt) {
+      return
+    }
+    return {
+      ...raw,
+      phase: 'waiting' as GamePhase,
+    }
+  })
+  return result.committed
 }
 
 export async function showReveal(): Promise<void> {
-  const snap = await get(gameRef())
-  const game = snap.exists() ? normalizeGame(snap.val()) : { ...DEFAULT_GAME }
-  const question = getQuestion(game.questionIndex)
+  let applyScores = false
+  let teamBets: Record<string, number> = {}
+  let teamChoices: Record<string, ChoiceId> = {}
+  let questionIndex = 0
+
+  const result = await runTransaction(gameRef(), (raw) => {
+    applyScores = false
+    teamBets = {}
+    teamChoices = {}
+    questionIndex = 0
+
+    if (raw == null) return raw
+    const game = normalizeGame(raw)
+
+    if (
+      game.phase === 'reveal' ||
+      game.phase === 'revealVideo' ||
+      game.phase === 'scores' ||
+      game.phase === 'finished'
+    ) {
+      return
+    }
+
+    const question = getQuestion(game.questionIndex)
+    const phase: GamePhase = question?.answerVideo ? 'revealVideo' : 'reveal'
+    const alreadyScored = allTeamsScored(game.scoredTeams)
+
+    if (!alreadyScored) {
+      applyScores = true
+      teamBets = game.teamBets
+      teamChoices = game.teamChoices
+      questionIndex = game.questionIndex
+    }
+
+    return {
+      ...raw,
+      phase,
+      endsAt: null,
+      scoredTeams: fullScoredTeams(),
+    }
+  })
+
+  if (!result.committed || !applyScores) return
+
+  const question = getQuestion(questionIndex)
   if (question) {
-    await applyAllTeamRoundScores(game.teamBets, game.teamChoices, question)
+    await applyAllTeamRoundScores(teamBets, teamChoices, question)
   }
-  const scoredTeams: Record<string, boolean> = {}
-  for (const id of TEAM_IDS) scoredTeams[id] = true
-  const phase: GamePhase = question?.answerVideo ? 'revealVideo' : 'reveal'
-  await update(gameRef(), { phase, endsAt: null, scoredTeams })
 }
 
 export async function showRevealText(): Promise<void> {
@@ -198,9 +269,7 @@ export async function showRevealText(): Promise<void> {
 }
 
 export async function showScores(): Promise<void> {
-  const scoredTeams: Record<string, boolean> = {}
-  for (const id of TEAM_IDS) scoredTeams[id] = true
-  await update(gameRef(), { phase: 'scores', scoredTeams })
+  await update(gameRef(), { phase: 'scores', scoredTeams: fullScoredTeams() })
 }
 
 export async function markTeamScored(teamId: string): Promise<void> {

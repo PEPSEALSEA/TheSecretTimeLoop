@@ -13,6 +13,7 @@ import {
 import {
   answeredCount as countAnsweredTeams,
   effectivePhase,
+  lockExpiredQuestion,
   subscribeGame,
   type GameState,
 } from '../lib/game'
@@ -181,6 +182,7 @@ export function DisplayAll({ layout = 'stage' }: DisplayAllProps) {
   const prevUpdatedAt = useRef<Record<string, number>>({})
   const prevRankKey = useRef<string | null>(null)
   const ready = useRef(false)
+  const lockAttemptEndsAt = useRef<number | null>(null)
   const stageScale = useStageScale()
   const isFluid = layout === 'fluid'
 
@@ -210,6 +212,19 @@ export function DisplayAll({ layout = 'stage' }: DisplayAllProps) {
   const isBoard = phase === 'scores' || phase === 'finished'
   const roundNumber = (game?.questionIndex ?? 0) + 1
   const answeredCount = game ? countAnsweredTeams(game) : 0
+
+  useEffect(() => {
+    if (
+      game?.phase !== 'question' ||
+      game.endsAt == null ||
+      now < game.endsAt
+    ) {
+      return
+    }
+    if (lockAttemptEndsAt.current === game.endsAt) return
+    lockAttemptEndsAt.current = game.endsAt
+    void lockExpiredQuestion(now)
+  }, [game, now])
 
   useEffect(() => {
     const prevHtml = document.documentElement.style.overflow
@@ -313,7 +328,7 @@ export function DisplayAll({ layout = 'stage' }: DisplayAllProps) {
       )}
 
       <DisplayShell layout={layout} stageScale={stageScale}>
-        <AnimatePresence mode="sync" initial={false}>
+        <AnimatePresence mode="wait" initial={false}>
           {phase === 'lobby' && (
             <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
               <div className="dsp-center">
