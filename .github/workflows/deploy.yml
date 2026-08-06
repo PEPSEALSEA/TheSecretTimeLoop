@@ -1,4 +1,4 @@
-name: Deploy to Firebase Hosting
+name: Deploy
 
 on:
   push:
@@ -6,11 +6,13 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+  pages: write
+  id-token: write
 
 concurrency:
-  group: hosting
-  cancel-in-progress: true
+  group: deploy
+  cancel-in-progress: false
 
 jobs:
   build-and-deploy:
@@ -22,11 +24,31 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npm run build
+
+      - name: Build for Firebase Hosting
+        run: npm run build
         env:
+          VITE_BASE_PATH: /
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_ADMIN_PASSWORD: ${{ secrets.VITE_ADMIN_PASSWORD }}
+
       - name: Deploy to Firebase Hosting
         run: npx -y firebase-tools@latest deploy --only hosting --project secret-timeloop-2026 --non-interactive
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Build for GitHub Pages
+        run: npm run build
+        env:
+          VITE_BASE_PATH: /TheSecretTimeLoop/
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_ADMIN_PASSWORD: ${{ secrets.VITE_ADMIN_PASSWORD }}
+
+      - name: Deploy to gh-pages
+        continue-on-error: true
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: dist
+          branch: gh-pages
+          clean: true
+          single-commit: true
