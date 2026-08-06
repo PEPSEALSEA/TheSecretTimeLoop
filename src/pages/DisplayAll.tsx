@@ -309,7 +309,7 @@ export function DisplayAll({ layout = 'stage' }: DisplayAllProps) {
     )
   }
 
-  const panelKey =
+  const contentKey =
     phase === 'lobby'
       ? 'lobby'
       : phase === 'betting'
@@ -328,6 +328,23 @@ export function DisplayAll({ layout = 'stage' }: DisplayAllProps) {
   const hasPromptImage = Boolean(question?.promptImage)
   const hasPromptAfterImage = Boolean(question?.promptAfterImage)
   const hasAnswerVideo = Boolean(question?.answerVideo)
+  const showContentCard = !isBoard
+  const centerTight = phase === 'betting' || phase === 'question'
+
+  let scrollClass = 'dsp-scroll-stage'
+  if (phase === 'betting' && hasPromptImage) {
+    scrollClass = hasPromptAfterImage
+      ? 'dsp-scroll-stage dsp-scroll-betting-img dsp-scroll-prompt-after'
+      : 'dsp-scroll-stage dsp-scroll-betting-img'
+  } else if (phase === 'question' && hasPromptImage) {
+    scrollClass = hasPromptAfterImage
+      ? 'dsp-scroll-stage dsp-scroll-question-img dsp-scroll-prompt-after'
+      : 'dsp-scroll-stage dsp-scroll-question-img'
+  } else if (phase === 'revealVideo' && hasAnswerVideo) {
+    scrollClass = 'dsp-scroll-stage dsp-scroll-reveal-video'
+  } else if (phase === 'reveal' && hasAnswerImage) {
+    scrollClass = 'dsp-scroll-stage dsp-scroll-reveal-img'
+  }
 
   return (
     <main className={rootClass} onPointerDown={unlockAudio}>
@@ -337,163 +354,130 @@ export function DisplayAll({ layout = 'stage' }: DisplayAllProps) {
 
       <DisplayShell layout={layout} stageScale={stageScale}>
         <AnimatePresence mode="wait" initial={false}>
-          {phase === 'lobby' && (
-            <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
-              <div className="dsp-center">
-                <ScrollPanel variant="content" className="dsp-scroll-stage">
-                  <h1 className="dsp-title dsp-title-hero">รอเริ่มเกม</h1>
-                </ScrollPanel>
-                <Link to="/" className="dsp-back-link">
-                  ← หน้าแรก
-                </Link>
-              </div>
-            </motion.div>
-          )}
+          {showContentCard && (
+            <motion.div key="content-card" className="dsp-layer" {...panelMotion}>
+              <div className={`dsp-center${centerTight ? ' dsp-center-tight' : ''}`}>
+                <ScrollPanel variant="content" className={scrollClass}>
+                  <AnimatePresence mode="wait" initial={false}>
+                    {phase === 'lobby' && (
+                      <motion.div key={contentKey} className="dsp-scroll-swap" {...panelMotion}>
+                        <h1 className="dsp-title dsp-title-hero">รอเริ่มเกม</h1>
+                      </motion.div>
+                    )}
 
-          {phase === 'betting' && question && (
-            <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
-              <div className="dsp-center dsp-center-tight">
-                <ScrollPanel
-                  variant="content"
-                  className={
-                    hasPromptImage
-                      ? hasPromptAfterImage
-                        ? 'dsp-scroll-stage dsp-scroll-betting-img dsp-scroll-prompt-after'
-                        : 'dsp-scroll-stage dsp-scroll-betting-img'
-                      : 'dsp-scroll-stage'
-                  }
-                >
-                  <p className="dsp-heading">วางเดิมพัน</p>
-                  <p className="dsp-round">
-                    ข้อ {roundNumber}/{TOTAL_QUESTIONS}
-                    <span className="dsp-mul"> · ×{formatMultiplier(question.multiplier)}</span>
-                  </p>
-                  <p className={fitPromptClass(question.prompt)}>{question.prompt}</p>
-                  {hasPromptImage && question.promptImage && (
-                    <ZoomableImage
-                      src={questionImageAsset(question.promptImage)}
-                      className="dsp-prompt-img"
-                    />
-                  )}
-                  {question.promptAfterImage && (
-                    <p className={fitPromptClass(question.promptAfterImage)}>
-                      {question.promptAfterImage}
-                    </p>
-                  )}
-                </ScrollPanel>
-              </div>
-            </motion.div>
-          )}
+                    {phase === 'betting' && question && (
+                      <motion.div key={contentKey} className="dsp-scroll-swap" {...panelMotion}>
+                        <p className="dsp-heading">วางเดิมพัน</p>
+                        <p className="dsp-round">
+                          ข้อ {roundNumber}/{TOTAL_QUESTIONS}
+                          <span className="dsp-mul"> · ×{formatMultiplier(question.multiplier)}</span>
+                        </p>
+                        <p className={fitPromptClass(question.prompt)}>{question.prompt}</p>
+                        {hasPromptImage && question.promptImage && (
+                          <ZoomableImage
+                            src={questionImageAsset(question.promptImage)}
+                            className="dsp-prompt-img"
+                          />
+                        )}
+                        {question.promptAfterImage && (
+                          <p className={fitPromptClass(question.promptAfterImage)}>
+                            {question.promptAfterImage}
+                          </p>
+                        )}
+                      </motion.div>
+                    )}
 
-          {phase === 'question' && question && (
-            <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
-              <div className="dsp-center dsp-center-tight">
-                <ScrollPanel
-                  variant="content"
-                  className={
-                    hasPromptImage
-                      ? hasPromptAfterImage
-                        ? 'dsp-scroll-stage dsp-scroll-question-img dsp-scroll-prompt-after'
-                        : 'dsp-scroll-stage dsp-scroll-question-img'
-                      : 'dsp-scroll-stage'
-                  }
-                >
-                  <p className="dsp-heading">โจทย์</p>
-                  <p className="dsp-round">
-                    ข้อ {roundNumber}/{TOTAL_QUESTIONS}
-                    <span className="dsp-mul"> · ×{formatMultiplier(question.multiplier)}</span>
-                  </p>
-                  <p className={fitPromptClass(question.prompt)}>{question.prompt}</p>
-                  {hasPromptImage && question.promptImage && (
-                    <ZoomableImage
-                      src={questionImageAsset(question.promptImage)}
-                      className="dsp-prompt-img"
-                    />
-                  )}
-                  {question.promptAfterImage && (
-                    <p className={fitPromptClass(question.promptAfterImage)}>
-                      {question.promptAfterImage}
-                    </p>
-                  )}
-                  <div className={fitChoicesClass(question.choices)}>
-                    {question.choices.map((choice) => (
-                      <div key={choice.id} className="dsp-choice">
-                        <div className="dsp-choice-face">
-                          <span className="dsp-choice-id">{choice.id}</span>
-                          <span className="dsp-choice-sep">:</span>
-                          <span className="dsp-choice-text">{choice.text}</span>
+                    {phase === 'question' && question && (
+                      <motion.div key={contentKey} className="dsp-scroll-swap" {...panelMotion}>
+                        <p className="dsp-heading">โจทย์</p>
+                        <p className="dsp-round">
+                          ข้อ {roundNumber}/{TOTAL_QUESTIONS}
+                          <span className="dsp-mul"> · ×{formatMultiplier(question.multiplier)}</span>
+                        </p>
+                        <p className={fitPromptClass(question.prompt)}>{question.prompt}</p>
+                        {hasPromptImage && question.promptImage && (
+                          <ZoomableImage
+                            src={questionImageAsset(question.promptImage)}
+                            className="dsp-prompt-img"
+                          />
+                        )}
+                        {question.promptAfterImage && (
+                          <p className={fitPromptClass(question.promptAfterImage)}>
+                            {question.promptAfterImage}
+                          </p>
+                        )}
+                        <div className={fitChoicesClass(question.choices)}>
+                          {question.choices.map((choice) => (
+                            <div key={choice.id} className="dsp-choice">
+                              <div className="dsp-choice-face">
+                                <span className="dsp-choice-id">{choice.id}</span>
+                                <span className="dsp-choice-sep">:</span>
+                                <span className="dsp-choice-text">{choice.text}</span>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollPanel>
-              </div>
-            </motion.div>
-          )}
+                      </motion.div>
+                    )}
 
-          {phase === 'waiting' && (
-            <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
-              <div className="dsp-center">
-                <ScrollPanel variant="content" className="dsp-scroll-stage">
-                  <h1 className="dsp-title dsp-title-hero">หมดเวลา</h1>
-                  <p className="dsp-answered-count">
-                    ตอบแล้ว {answeredCount}/{TEAM_IDS.length} ทีม
-                  </p>
-                </ScrollPanel>
-              </div>
-            </motion.div>
-          )}
+                    {phase === 'waiting' && (
+                      <motion.div key={contentKey} className="dsp-scroll-swap" {...panelMotion}>
+                        <h1 className="dsp-title dsp-title-hero">หมดเวลา</h1>
+                        <p className="dsp-answered-count">
+                          ตอบแล้ว {answeredCount}/{TEAM_IDS.length} ทีม
+                        </p>
+                      </motion.div>
+                    )}
 
-          {phase === 'revealVideo' && question && hasAnswerVideo && question.answerVideo && (
-            <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
-              <div className="dsp-center">
-                <ScrollPanel
-                  variant="content"
-                  className="dsp-scroll-stage dsp-scroll-reveal-video"
-                >
-                  <p className="dsp-heading">วิดีโอเฉลย</p>
-                  <p className="dsp-round">ข้อ {roundNumber}/{TOTAL_QUESTIONS}</p>
-                  <p className="dsp-answer">{question.answerLabel}</p>
-                  <AnswerVideo
-                    key={`av-${game?.questionIndex}-${question.answerVideo}`}
-                    src={questionVideoAsset(question.answerVideo)}
-                    className="dsp-answer-video"
-                  />
-                </ScrollPanel>
-              </div>
-            </motion.div>
-          )}
+                    {phase === 'revealVideo' &&
+                      question &&
+                      hasAnswerVideo &&
+                      question.answerVideo && (
+                        <motion.div key={contentKey} className="dsp-scroll-swap" {...panelMotion}>
+                          <p className="dsp-heading">วิดีโอเฉลย</p>
+                          <p className="dsp-round">
+                            ข้อ {roundNumber}/{TOTAL_QUESTIONS}
+                          </p>
+                          <p className="dsp-answer">{question.answerLabel}</p>
+                          <AnswerVideo
+                            key={`av-${game?.questionIndex}-${question.answerVideo}`}
+                            src={questionVideoAsset(question.answerVideo)}
+                            className="dsp-answer-video"
+                          />
+                        </motion.div>
+                      )}
 
-          {phase === 'reveal' && question && (
-            <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
-              <div className="dsp-center">
-                <ScrollPanel
-                  variant="content"
-                  className={
-                    hasAnswerImage
-                      ? 'dsp-scroll-stage dsp-scroll-reveal-img'
-                      : 'dsp-scroll-stage'
-                  }
-                >
-                  <p className="dsp-heading">เฉลย</p>
-                  <p className="dsp-round">ข้อ {roundNumber}/{TOTAL_QUESTIONS}</p>
-                  <p className="dsp-answer">{question.answerLabel}</p>
-                  {hasAnswerImage && question.answerImage && (
-                    <ZoomableImage
-                      src={questionImageAsset(question.answerImage)}
-                      className="dsp-answer-img"
-                    />
-                  )}
-                  <p className={fitExplainClass(question.explanation, hasAnswerImage)}>
-                    {question.explanation}
-                  </p>
+                    {phase === 'reveal' && question && (
+                      <motion.div key={contentKey} className="dsp-scroll-swap" {...panelMotion}>
+                        <p className="dsp-heading">เฉลย</p>
+                        <p className="dsp-round">
+                          ข้อ {roundNumber}/{TOTAL_QUESTIONS}
+                        </p>
+                        <p className="dsp-answer">{question.answerLabel}</p>
+                        {hasAnswerImage && question.answerImage && (
+                          <ZoomableImage
+                            src={questionImageAsset(question.answerImage)}
+                            className="dsp-answer-img"
+                          />
+                        )}
+                        <p className={fitExplainClass(question.explanation, hasAnswerImage)}>
+                          {question.explanation}
+                        </p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </ScrollPanel>
+                {phase === 'lobby' && (
+                  <Link to="/" className="dsp-back-link">
+                    ← หน้าแรก
+                  </Link>
+                )}
               </div>
             </motion.div>
           )}
 
           {isBoard && (
-            <motion.div key={panelKey} className="dsp-layer" {...panelMotion}>
+            <motion.div key="scores" className="dsp-layer" {...panelMotion}>
               <div className="lb-inner">
                 <header className="lb-header">
                   <RoundBadge questionNumber={roundNumber} />
