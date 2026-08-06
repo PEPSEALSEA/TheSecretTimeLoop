@@ -180,6 +180,11 @@ export function StaffTeam() {
             <p className="mt-1 font-display text-base leading-snug text-[var(--color-ocean-deep)]">
               {question.prompt}
             </p>
+            {question.promptAfterImage && (
+              <p className="mt-2 font-display text-base leading-snug text-[var(--color-ocean-deep)]">
+                {question.promptAfterImage}
+              </p>
+            )}
           </div>
 
           <div>

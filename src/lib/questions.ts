@@ -16,6 +16,7 @@ export type Question = {
   multiplier: number
   durationSec: number
   promptImage?: string
+  promptAfterImage?: string
   answerImage?: string
   answerVideo?: string
 }
@@ -160,6 +161,8 @@ export const QUESTIONS: Question[] = [
     multiplier: 1.2,
     durationSec: 30,
     promptImage: 'q7-wifi.png',
+    promptAfterImage:
+      'หากนักเรียนอยู่ในห้องเรียนที่ต้องการเชื่อมต่อสัญญาณอินเทอร์เน็ตโดยมีตัวปล่อยสัญญาณอยู่นอกห้องและค่อนข้างไกล ควรเชื่อมต่อสัญญาณย่านความถี่แบบใดจึงจะเสถียรมากกว่ากัน',
   },
   {
     id: 'q8',

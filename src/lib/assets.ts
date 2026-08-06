@@ -62,6 +62,30 @@ function preloadImage(src: string): Promise<void> {
   })
 }
 
+function preloadVideo(src: string): Promise<void> {
+  return new Promise((resolve) => {
+    const video = document.createElement('video')
+    let settled = false
+    const done = () => {
+      if (settled) return
+      settled = true
+      window.clearTimeout(timer)
+      video.oncanplaythrough = null
+      video.onerror = null
+      video.removeAttribute('src')
+      video.load()
+      resolve()
+    }
+    const timer = window.setTimeout(done, 45000)
+    video.preload = 'auto'
+    video.muted = true
+    video.playsInline = true
+    video.oncanplaythrough = () => done()
+    video.onerror = () => done()
+    video.src = src
+  })
+}
+
 let preloadPromise: Promise<void> | null = null
 
 export function preloadLeaderboardAssets(
@@ -69,19 +93,24 @@ export function preloadLeaderboardAssets(
 ): Promise<void> {
   if (preloadPromise) return preloadPromise
 
-  const urls = [
+  const imageUrls = [
     ...LEADERBOARD_IMAGE_FILES.map((file) => leaderboardAsset(file)),
     ...QUESTION_IMAGE_FILES.map((file) => questionImageAsset(file)),
   ]
+  const videoUrls = QUESTION_VIDEO_FILES.map((file) => questionVideoAsset(file))
+  const total = imageUrls.length + videoUrls.length
   let loaded = 0
 
-  preloadPromise = Promise.all(
-    urls.map(async (url) => {
-      await preloadImage(url)
-      loaded += 1
-      onProgress?.(loaded, urls.length)
-    }),
-  ).then(async () => {
+  const tick = async (work: Promise<void>) => {
+    await work
+    loaded += 1
+    onProgress?.(loaded, total)
+  }
+
+  preloadPromise = Promise.all([
+    ...imageUrls.map((url) => tick(preloadImage(url))),
+    ...videoUrls.map((url) => tick(preloadVideo(url))),
+  ]).then(async () => {
     if (typeof document !== 'undefined' && document.fonts?.ready) {
       await document.fonts.ready
     }

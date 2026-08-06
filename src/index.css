@@ -507,6 +507,14 @@
     margin-top: 8px;
   }
 
+  .dsp-scroll-betting-img.dsp-scroll-prompt-after .dsp-prompt-img {
+    max-height: 300px;
+  }
+
+  .dsp-scroll-betting-img .zoomable-trigger + .dsp-prompt {
+    margin-top: 12px;
+  }
+
   .dsp-scroll-betting-img .dsp-bet-status {
     margin-top: 8px;
   }
@@ -732,6 +740,14 @@
     margin-top: 8px;
   }
 
+  .dsp-scroll-question-img.dsp-scroll-prompt-after .dsp-prompt-img {
+    max-height: 240px;
+  }
+
+  .dsp-scroll-question-img .zoomable-trigger + .dsp-prompt {
+    margin-top: 10px;
+  }
+
   .dsp-scroll-question-img .dsp-choices {
     margin-top: 12px;
   }
@@ -757,7 +773,9 @@
   }
 
   .dsp-choice {
+    display: flex;
     min-width: 0;
+    min-height: 100%;
     padding: 3px;
     background: linear-gradient(180deg, #e8c76a 0%, #b88928 45%, #8a6418 100%);
     clip-path: polygon(
@@ -775,7 +793,9 @@
     display: flex;
     align-items: center;
     gap: 0.4rem;
+    flex: 1 1 auto;
     min-height: 6.4rem;
+    height: 100%;
     width: 100%;
     box-sizing: border-box;
     padding: 0.9rem 2.8rem 0.9rem 2.5rem;

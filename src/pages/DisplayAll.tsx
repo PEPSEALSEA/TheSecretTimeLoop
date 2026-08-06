@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { AnswerVideo, stopAllAnswerVideos } from '../components/AnswerVideo'
 import { GameTimer } from '../components/GameTimer'
 import { TeamGrid } from '../components/TeamGrid'
 import { ZoomableImage } from '../components/ZoomableImage'
@@ -214,6 +215,12 @@ export function DisplayAll({ layout = 'stage' }: DisplayAllProps) {
   const answeredCount = game ? countAnsweredTeams(game) : 0
 
   useEffect(() => {
+    if (phase !== 'revealVideo') {
+      stopAllAnswerVideos()
+    }
+  }, [phase])
+
+  useEffect(() => {
     if (
       game?.phase !== 'question' ||
       game.endsAt == null ||
@@ -319,6 +326,7 @@ export function DisplayAll({ layout = 'stage' }: DisplayAllProps) {
 
   const hasAnswerImage = Boolean(question?.answerImage)
   const hasPromptImage = Boolean(question?.promptImage)
+  const hasPromptAfterImage = Boolean(question?.promptAfterImage)
   const hasAnswerVideo = Boolean(question?.answerVideo)
 
   return (
@@ -349,7 +357,9 @@ export function DisplayAll({ layout = 'stage' }: DisplayAllProps) {
                   variant="content"
                   className={
                     hasPromptImage
-                      ? 'dsp-scroll-stage dsp-scroll-betting-img'
+                      ? hasPromptAfterImage
+                        ? 'dsp-scroll-stage dsp-scroll-betting-img dsp-scroll-prompt-after'
+                        : 'dsp-scroll-stage dsp-scroll-betting-img'
                       : 'dsp-scroll-stage'
                   }
                 >
@@ -365,6 +375,11 @@ export function DisplayAll({ layout = 'stage' }: DisplayAllProps) {
                       className="dsp-prompt-img"
                     />
                   )}
+                  {question.promptAfterImage && (
+                    <p className={fitPromptClass(question.promptAfterImage)}>
+                      {question.promptAfterImage}
+                    </p>
+                  )}
                 </ScrollPanel>
               </div>
             </motion.div>
@@ -377,7 +392,9 @@ export function DisplayAll({ layout = 'stage' }: DisplayAllProps) {
                   variant="content"
                   className={
                     hasPromptImage
-                      ? 'dsp-scroll-stage dsp-scroll-question-img'
+                      ? hasPromptAfterImage
+                        ? 'dsp-scroll-stage dsp-scroll-question-img dsp-scroll-prompt-after'
+                        : 'dsp-scroll-stage dsp-scroll-question-img'
                       : 'dsp-scroll-stage'
                   }
                 >
@@ -392,6 +409,11 @@ export function DisplayAll({ layout = 'stage' }: DisplayAllProps) {
                       src={questionImageAsset(question.promptImage)}
                       className="dsp-prompt-img"
                     />
+                  )}
+                  {question.promptAfterImage && (
+                    <p className={fitPromptClass(question.promptAfterImage)}>
+                      {question.promptAfterImage}
+                    </p>
                   )}
                   <div className={fitChoicesClass(question.choices)}>
                     {question.choices.map((choice) => (
@@ -432,13 +454,10 @@ export function DisplayAll({ layout = 'stage' }: DisplayAllProps) {
                   <p className="dsp-heading">วิดีโอเฉลย</p>
                   <p className="dsp-round">ข้อ {roundNumber}/{TOTAL_QUESTIONS}</p>
                   <p className="dsp-answer">{question.answerLabel}</p>
-                  <video
-                    key={question.answerVideo}
-                    className="dsp-answer-video"
+                  <AnswerVideo
+                    key={`av-${game?.questionIndex}-${question.answerVideo}`}
                     src={questionVideoAsset(question.answerVideo)}
-                    controls
-                    autoPlay
-                    playsInline
+                    className="dsp-answer-video"
                   />
                 </ScrollPanel>
               </div>
