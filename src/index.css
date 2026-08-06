@@ -389,12 +389,15 @@
 
   .lb-card-name {
     margin: 0;
-    padding-inline: 2.2rem;
+    padding-inline: 1.4rem;
+    max-width: 100%;
     font-family: var(--font-display);
-    font-size: 4.1rem;
+    font-size: 2.15rem;
     font-weight: 800;
-    line-height: 1.02;
+    line-height: 1.12;
     color: #3d2414;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .lb-card-score {
@@ -1359,8 +1362,9 @@
   }
 
   .lb-fluid .lb-card-name {
-    padding-inline: clamp(0.8rem, 2vw, 1.6rem);
-    font-size: clamp(1.35rem, 4.2vw, 2.6rem);
+    padding-inline: clamp(0.55rem, 1.4vw, 1.1rem);
+    font-size: clamp(0.78rem, 2.15vw, 1.35rem);
+    line-height: 1.15;
   }
 
   .lb-fluid .lb-card-score {

@@ -28,6 +28,7 @@ import {
   TEAM_IDS,
   formatMultiplier,
   formatScore,
+  getTeamName,
   type TeamState,
 } from '../lib/scoring'
 import {
@@ -561,7 +562,7 @@ export function Admin() {
               >
                 <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
                   <p className="font-display text-base text-[var(--color-ocean-deep)]">
-                    {team?.name ?? `ทีม ${id}`}
+                    {getTeamName(id)}
                   </p>
                   <p className="font-score text-sm text-[var(--color-ink-muted)]">
                     ตอนนี้ {team ? formatScore(team.score) : '—'}

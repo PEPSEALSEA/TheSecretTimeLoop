@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { leaderboardAsset } from '../lib/assets'
-import { TEAM_IDS, formatScore, type TeamState } from '../lib/scoring'
+import { TEAM_IDS, formatScore, getTeamName, type TeamState } from '../lib/scoring'
 
 type Props = {
   teams: Record<string, TeamState>
@@ -79,7 +79,7 @@ export function TeamGrid({ teams, scoredTeams = {} }: Props) {
             />
             <div className="lb-card-body">
               <span className="lb-card-rank">#{rank}</span>
-              <p className="lb-card-name">{team?.name ?? `ทีมที่ ${id}`}</p>
+              <p className="lb-card-name">{getTeamName(id)}</p>
               <p className={`lb-card-score ${isScored ? 'lb-card-score-scored' : ''}`}>
                 {scoreLabel}
               </p>

@@ -32,6 +32,22 @@ export type TeamState = {
 
 export const TEAM_IDS = ['1', '2', '3', '4', '5', '6', '7', '8'] as const
 export type TeamId = (typeof TEAM_IDS)[number]
+
+export const TEAM_NAMES: Record<TeamId, string> = {
+  '1': 'เน้นเข้าร่วมไม่เน้นเข้ารอบ',
+  '2': 'Emperor',
+  '3': 'สามตัวบาท',
+  '4': 'สอบตกหกเจ็ด',
+  '5': 'ชี๋ม๋ายsin Slope~',
+  '6': 'MVR',
+  '7': 'กันเชียงปู',
+  '8': 'ฟิสิกส์โคตรซิกเซเว่น',
+}
+
+export function getTeamName(teamId: string): string {
+  return TEAM_NAMES[teamId as TeamId] ?? `ทีม ${teamId}`
+}
+
 export const DEFAULT_STARTING_SCORE = 2000
 export const BET_OPTIONS = [100, 200, 300, 400, 500] as const
 export type BetOption = (typeof BET_OPTIONS)[number]
@@ -57,7 +73,7 @@ export function createInitialTeam(
   startingScore = DEFAULT_STARTING_SCORE,
 ): TeamState {
   return {
-    name: `ทีม ${teamId}`,
+    name: getTeamName(teamId),
     score: startingScore,
     startingScore,
     updatedAt: Date.now(),

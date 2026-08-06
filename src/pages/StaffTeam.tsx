@@ -19,6 +19,7 @@ import {
   TEAM_IDS,
   formatMultiplier,
   formatScore,
+  getTeamName,
   type TeamState,
 } from '../lib/scoring'
 import { unlockAudio } from '../lib/sounds'
@@ -160,7 +161,7 @@ export function StaffTeam() {
           คะแนนทีมนี้
         </p>
         <h1 className="font-display mt-1 text-2xl text-[var(--color-ocean-deep)]">
-          {team?.name ?? `ทีม ${teamId}`}
+          {getTeamName(teamId)}
         </h1>
         {team ? (
           <div className="mt-1">
