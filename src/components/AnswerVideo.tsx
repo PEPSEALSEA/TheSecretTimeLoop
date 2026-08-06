@@ -29,6 +29,8 @@ export function AnswerVideo({ src, className = '' }: Props) {
 
     const tryPlay = (fromStart: boolean) => {
       if (cancelled) return
+      el.muted = true
+      el.defaultMuted = true
       if (fromStart) {
         try {
           el.currentTime = 0
@@ -54,6 +56,8 @@ export function AnswerVideo({ src, className = '' }: Props) {
       tryPlay(false)
     }
 
+    el.muted = true
+    el.defaultMuted = true
     el.loop = true
     el.playsInline = true
     el.preload = 'auto'
@@ -82,6 +86,7 @@ export function AnswerVideo({ src, className = '' }: Props) {
       className={className}
       controls
       autoPlay
+      muted
       loop
       playsInline
       preload="auto"
