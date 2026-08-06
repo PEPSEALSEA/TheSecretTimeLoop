@@ -192,7 +192,7 @@ export function StaffTeam() {
             <p className="mb-2 text-xs font-semibold text-[var(--color-ink-muted)]">
               เงินเดิมพัน
             </p>
-            <div className="grid grid-cols-5 gap-1.5">
+            <div className="grid grid-cols-5 gap-2">
               {BET_OPTIONS.map((amount) => {
                 const active = selectedBet === amount
                 const overBudget = Boolean(team && amount > team.score)
@@ -202,9 +202,10 @@ export function StaffTeam() {
                     type="button"
                     disabled={busy || overBudget}
                     onClick={() => void onPickBet(amount)}
-                    className={`h-11 w-full rounded-lg border-2 text-sm font-bold transition ${
+                    aria-pressed={active}
+                    className={`flex min-h-12 w-full items-center justify-center rounded-xl border-2 px-1 py-2 text-sm font-bold leading-none transition ${
                       active
-                        ? 'border-[var(--color-gold)] bg-[rgba(240,192,64,0.28)] text-[var(--color-ocean-deep)]'
+                        ? 'border-[var(--color-gold)] bg-[rgba(240,192,64,0.28)] text-[var(--color-ocean-deep)] shadow-[inset_0_0_0_1px_rgba(240,192,64,0.35)]'
                         : overBudget
                           ? 'cursor-not-allowed border-[rgba(42,24,16,0.08)] bg-[rgba(42,24,16,0.04)] text-[var(--color-ink-muted)] opacity-50'
                           : 'border-[rgba(42,24,16,0.12)] bg-[rgba(255,255,255,0.28)] text-[var(--color-ocean-deep)] hover:border-[rgba(26,90,138,0.35)]'
@@ -217,7 +218,7 @@ export function StaffTeam() {
             </div>
           </div>
 
-          <div className="min-h-[15.5rem]">
+          <div>
             {canChoose ? (
               <div className="space-y-2">
                 <p className="text-xs font-semibold text-[var(--color-ink-muted)]">ตัวเลือก</p>
@@ -229,16 +230,23 @@ export function StaffTeam() {
                       type="button"
                       disabled={busy}
                       onClick={() => void onPickChoice(choice.id)}
-                      className={`h-[3.25rem] w-full rounded-xl border-2 px-3 text-left transition ${
+                      aria-pressed={active}
+                      className={`flex w-full items-start gap-2.5 rounded-xl border-2 px-3 py-2.5 text-left transition ${
                         active
-                          ? 'border-[var(--color-gold)] bg-[rgba(240,192,64,0.28)]'
+                          ? 'border-[var(--color-gold)] bg-[rgba(240,192,64,0.28)] shadow-[inset_0_0_0_1px_rgba(240,192,64,0.35)]'
                           : 'border-[rgba(42,24,16,0.12)] bg-[rgba(255,255,255,0.28)] hover:border-[rgba(26,90,138,0.35)]'
                       }`}
                     >
-                      <span className="font-display text-lg text-[var(--color-ocean-deep)]">
-                        {choice.id}.
-                      </span>{' '}
-                      <span className="text-sm leading-snug text-[var(--color-ink)]">
+                      <span
+                        className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg font-display text-base leading-none ${
+                          active
+                            ? 'bg-[rgba(240,192,64,0.45)] text-[var(--color-ocean-deep)]'
+                            : 'bg-[rgba(42,24,16,0.08)] text-[var(--color-ocean-deep)]'
+                        }`}
+                      >
+                        {choice.id}
+                      </span>
+                      <span className="min-w-0 flex-1 break-words text-sm leading-snug text-[var(--color-ink)]">
                         {choice.text}
                       </span>
                     </button>
@@ -246,7 +254,7 @@ export function StaffTeam() {
                 })}
               </div>
             ) : (
-              <div className="flex h-[15.5rem] items-center justify-center rounded-xl border border-dashed border-[rgba(42,24,16,0.14)] bg-[rgba(255,255,255,0.18)] px-4 text-center text-sm text-[var(--color-ink-muted)]">
+              <div className="flex min-h-[8rem] items-center justify-center rounded-xl border border-dashed border-[rgba(42,24,16,0.14)] bg-[rgba(255,255,255,0.18)] px-4 py-6 text-center text-sm text-[var(--color-ink-muted)]">
                 รอ host เปิดตัวเลือก
               </div>
             )}
