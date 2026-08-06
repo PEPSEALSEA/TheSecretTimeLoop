@@ -157,8 +157,15 @@ function fitPromptClass(text: string): string {
   return 'dsp-prompt'
 }
 
-function fitChoicesClass(choices: { text: string }[]): string {
+function fitChoicesClass(
+  choices: { text: string }[],
+  growBoxes = false,
+): string {
   const maxLen = Math.max(0, ...choices.map((c) => c.text.length))
+  if (growBoxes) {
+    if (maxLen > 36) return 'dsp-choices dsp-choices-tall'
+    return 'dsp-choices'
+  }
   if (maxLen > 70) return 'dsp-choices dsp-choices-dense'
   if (maxLen > 36) return 'dsp-choices dsp-choices-md'
   return 'dsp-choices'
@@ -406,7 +413,7 @@ export function DisplayAll({ layout = 'stage' }: DisplayAllProps) {
                             {question.promptAfterImage}
                           </p>
                         )}
-                        <div className={fitChoicesClass(question.choices)}>
+                        <div className={fitChoicesClass(question.choices, !isFluid)}>
                           {question.choices.map((choice) => (
                             <div key={choice.id} className="dsp-choice">
                               <div className="dsp-choice-face">
