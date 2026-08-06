@@ -8,8 +8,8 @@ import {
 } from 'firebase/database'
 import { db } from './firebase'
 import { getQuestion, QUESTIONS, type ChoiceId } from './questions'
-import { BET_OPTIONS, TEAM_IDS } from './scoring'
-import { applyAllTeamRoundScores } from './teams'
+import { BET_OPTIONS, DEFAULT_STARTING_SCORE, TEAM_IDS } from './scoring'
+import { applyAllTeamRoundScores, resetAllTeams } from './teams'
 import { serverNow } from './timer'
 
 export type GamePhase =
@@ -303,6 +303,13 @@ export async function jumpToQuestion(questionIndex: number): Promise<void> {
 
 export async function resetGame(): Promise<void> {
   await set(gameRef(), { ...DEFAULT_GAME })
+}
+
+export async function resetAll(): Promise<void> {
+  await Promise.all([
+    set(gameRef(), { ...DEFAULT_GAME }),
+    resetAllTeams(DEFAULT_STARTING_SCORE),
+  ])
 }
 
 export function questionProgressLabel(index: number): string {

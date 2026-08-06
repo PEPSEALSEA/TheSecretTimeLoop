@@ -12,7 +12,7 @@ import {
   nextQuestionLabel,
   openQuestion,
   questionProgressLabel,
-  resetGame,
+  resetAll,
   scoredCount,
   showReveal,
   showRevealText,
@@ -32,7 +32,6 @@ import {
 } from '../lib/scoring'
 import {
   ensureAllTeams,
-  resetAllTeams,
   resetTeam,
   setTeamScore,
   subscribeAllTeams,
@@ -161,23 +160,13 @@ export function Admin() {
     await run(() => resetTeam(teamId, start))
   }
 
-  function confirmResetGame() {
-    const ok = window.confirm(
-      'รีเซ็ตเกม?\n\nสถานะเกมจะกลับไปรอเริ่ม · คะแนนทีมจะไม่ถูกรีเซ็ต',
-    )
-    if (!ok) return
-    void run(resetGame)
-  }
-
   function confirmResetAll() {
     const ok = window.confirm(
-      'Reset All?\n\nจะรีเซ็ตเกมกลับไปรอเริ่ม และรีเซ็ตคะแนนทุกทีมกลับค่าเริ่มต้น\nการกระทำนี้ยกเลิกไม่ได้',
+      'Reset All?\n\nจะล้างทุกอย่าง: สถานะเกม · ตัวจับเวลา · คำตอบ · เดิมพัน · คะแนนและประวัติทุกทีม\nกลับไปรอเริ่มด้วยคะแนนเริ่มต้น\nการกระทำนี้ยกเลิกไม่ได้',
     )
     if (!ok) return
-    void run(async () => {
-      await resetGame()
-      await resetAllTeams(DEFAULT_STARTING_SCORE)
-    })
+    lockAttemptEndsAt.current = null
+    void run(resetAll)
   }
 
   const primaryAction =
@@ -233,8 +222,8 @@ export function Admin() {
                       }
                     : phase === 'finished'
                       ? {
-                          label: 'เริ่มเกมใหม่',
-                          onClick: confirmResetGame,
+                          label: 'Reset All · เริ่มใหม่',
+                          onClick: confirmResetAll,
                           tone: 'gold' as const,
                         }
                       : null
@@ -250,14 +239,6 @@ export function Admin() {
         } h-12 min-h-12 w-full flex-1 touch-manipulation rounded-xl px-4 text-base font-semibold sm:w-72 sm:flex-none`}
       >
         {primaryAction?.label ?? '—'}
-      </button>
-      <button
-        type="button"
-        disabled={busy || phase === 'lobby'}
-        onClick={confirmResetGame}
-        className="btn-sea h-12 min-h-12 w-[7.5rem] shrink-0 touch-manipulation rounded-xl px-3 text-sm font-semibold"
-      >
-        รีเซ็ตเกม
       </button>
       <button
         type="button"
